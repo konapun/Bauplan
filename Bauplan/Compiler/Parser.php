@@ -20,7 +20,7 @@ class Parser {
       $lexer = new Lexer();
     }
     
-    this->syntaxTree = new SyntaxTree("LAMBDA");
+    $this->syntaxTree = new SyntaxTree("Bauplan");
     $this->lexer = $lexer;
     $this->file = "[plain source]";
   }
@@ -45,6 +45,8 @@ class Parser {
     $this->tokens = $tokens;
     $this->currentToken = array_shift($this->tokens);
     $this->bauplan();
+    
+    return $this->syntaxTree;
   }
   
   /*** PRODUCTION RULES, BASED OFF doc/grammar.bnf ***/
@@ -59,9 +61,15 @@ class Parser {
   }
   
   private function preprocDeclaration() {
-    if ($this->accept('T_PREPROC_DECL')) {
-      if ($this->accept('T_IDENTIFIER')) {
+    if ($preprocDecl = $this->accept('T_PREPROC_DECL')) {
+      $preprocNode = $this->syntaxTree->addChild($preprocDecl);
+      if ($preprocKey = $this->accept('T_IDENTIFIER')) {
+        $preprocNode->addChild($preprocKey);
+        
+        $oldTree = $this->syntaxTree;
+        $this->syntaxTree = $preprocNode;
         $this->preprocVal();
+        $this->syntaxTree = $oldTree;
       }
       else {
         $this->throwError('T_IDENTIFIER');
@@ -288,9 +296,12 @@ class Parser {
   }
   /*** HELPERS ***/
   private function accept($symbol) {
-    if ($this->currentToken->getType() == $symbol) {
+    $returnToken = $this->currentToken;
+    if ($returnToken->getType() == $symbol) {
       $this->currentToken = array_shift($this->tokens);
-      return true;
+      
+      $this->syntaxTree->addChild($returnToken);
+      return $returnToken;
     }
     return false;
   }

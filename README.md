@@ -5,7 +5,6 @@ Bauplan is a modular, general-purpose templating system for PHP (like so, so man
 The BNF grammar for Bauplan is located [here](bnf/grammar.bnf). Logic is mainly performed through user-definable directives which eliminates the need for logic operations in the core language.
 
 ###Example
-    ```
     $$PREPROCESSOR-DIRECTIVE EXAMPLE
     
     ;;(
@@ -27,7 +26,6 @@ The BNF grammar for Bauplan is located [here](bnf/grammar.bnf). Logic is mainly 
       
       $(var-1 {value: "test" | readonly}) ;; a variable
     )
-    ```
 
 The PHP API into Bauplan provides a number of different operations depending on the data type (template, section, variable, etc.)
 

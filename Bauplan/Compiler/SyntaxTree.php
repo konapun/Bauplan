@@ -17,12 +17,14 @@ class SyntaxTree {
   }
   
   function addChild($data) {
-    $this->addChildNode(new SyntaxTree($data));
+    $node = $this->addChildNode(new SyntaxTree($data));
+    return $node;
   }
   
   function addChildNode($node) {
     $node->parent = $this;
     array_push($this->children, $node);
+    return $node;
   }
   
   function isRoot() {
