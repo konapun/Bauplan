@@ -1,0 +1,8 @@
+$$ SYNTAX-LEVEL 2
+*(template {directive1 | directive2: "directiveval1"}
+  ;;(
+    This is a block comment
+  ;;)
+  
+  "This is the body" ;; TODO: Eventually I'd like to get this to accept BAREWORDs, but right now IDENTIFIER is classified first
+)

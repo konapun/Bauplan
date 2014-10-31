@@ -1,0 +1,15 @@
+$$SYNTAX-LEVEL 2
+*(html5-driver
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>$(title)</title>
+    @(styles)
+    @(scripts)
+  </head>
+  <body>
+    *(content)
+    @(end-scripts)
+  </body>
+</html>
+)
