@@ -38,4 +38,3 @@ IDENTIFIER := /^[$A-Z_][0-9A_Z_$]*$/i
 COMMENT := BLOCK_COMMENT | INLINE_COMMENT
 BLOCK_COMMENT := ";;(" anything ";;)"
 INLINE_COMMENT := ";;" anything
-
