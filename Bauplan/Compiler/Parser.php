@@ -20,7 +20,7 @@ class Parser {
       $lexer = new Lexer();
     }
 
-    $this->syntaxTree = new SyntaxTree("Bauplan");
+    $this->syntaxTree = new SyntaxTree(new Token("Bauplan", "ROOT"));
     $this->lexer = $lexer;
     $this->file = "[plain source]";
   }
@@ -290,6 +290,7 @@ class Parser {
     $currtok = $this->currentToken;
     throw new ParseException("Expected $expected, got \"" . $currtok->getValue() . "\" of type " . $currtok->getType() . "\n\tat line " . $currtok->getLine() . " in file " . $this->file);
   }
+
   /*** HELPERS ***/
   private function accept($symbol) {
     $returnToken = $this->currentToken;

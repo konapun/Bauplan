@@ -4,22 +4,23 @@ namespace Bauplan\Compiler;
 class TreeTraversal {
   /* Traversal type enum */
   const TRAVERSE_BF = 0;
-  
+
   private $tree;
-  
+
   function __construct($tree) {
     $this->tree = $tree;
   }
-  
+
   function walk($algorithm, $callback) { // walkers, Coral!
     switch ($algorithm) {
       case self::TRAVERSE_BF:
         $this->walkRecBF($this->tree, $callback);
+        break;
       default:
-        throw new \InvalidArgumentException("No algorithm for walk type");  
+        throw new \InvalidArgumentException("No algorithm for walk type");
     }
   }
-  
+
   /*
    * Breadth-first traversal
    */
