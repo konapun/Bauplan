@@ -121,7 +121,7 @@ class Parser {
         $this->primitiveType();
       }
       catch (ParseException $e) {
-        // empty
+        $this->throwError('complex type');
       }
     }
   }
@@ -141,7 +141,26 @@ class Parser {
       }
     }
   }
-
+  
+  private function valuedType() {
+    try {
+      $this->code();
+    }
+    catch (ParseException $e) {
+      try {
+        $this->instruction();
+      }
+      catch (ParseException $e) { 
+        try {
+          $this->primitiveType();
+        }
+        catch (ParseException $e) {
+          $this->throwError('valued type');
+        }
+      }
+    }
+  }
+  
   private function numericType() {
     if (!$this->accept('T_INTEGER')) {
       if (!$this->accept('T_DOUBLE')) {
@@ -199,7 +218,7 @@ class Parser {
     if ($this->accept('T_TYPE_OPEN')) {
       if ($this->accept('T_IDENTIFIER')) {
         $this->directiveBlock();
-        $this->complexType();
+        $this->body();
         if (!$this->accept('T_TYPE_CLOSE')) {
           $this->throwError('T_TYPE_CLOSE');
         }
@@ -212,7 +231,17 @@ class Parser {
       $this->throwError('T_TYPE_OPEN');
     }
   }
-
+  
+  private function body() {
+    try {
+      $this->complexType();
+      $this->body();
+    }
+    catch (ParseException $e) {
+      // empty
+    }
+  }
+  
   private function typedefNoBody() {
     if ($this->accept('T_TYPE_OPEN')) {
       if ($this->accept('T_IDENTIFIER')) {
@@ -267,7 +296,7 @@ class Parser {
   }
 
   private function directiveValList() {
-    $this->primitiveType();
+    $this->valuedType();
     $this->directiveValRest();
   }
 
@@ -280,8 +309,10 @@ class Parser {
 
   private function string() {
     if (!$this->accept('T_QUOTED_STRING')) {
-      if (!$this->accept('T_BAREWORD')) {
-        $this->throwError("string");
+      if (!$this->accept('T_LITERAL')) {
+        if (!$this->accept('T_BAREWORD')) {
+          $this->throwError("string");
+        }
       }
     }
   }
