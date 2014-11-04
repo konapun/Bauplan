@@ -5,11 +5,13 @@ class SyntaxTree {
   private $parent;
   private $data;
   private $children;
-
+  private $depth;
+  
   function __construct($data) {
     $this->parent = null;
     $this->children = array();
     $this->data = $data;
+    $this->depth = 0;
   }
 
   function getData() {
@@ -19,7 +21,11 @@ class SyntaxTree {
   function getChildren() {
     return $this->children;
   }
-
+  
+  function getDepth() {
+    return $this->depth;
+  }
+  
   function addChild($data) {
     $node = $this->addChildNode(new SyntaxTree($data));
     return $node;
@@ -27,6 +33,7 @@ class SyntaxTree {
 
   function addChildNode($node) {
     $node->parent = $this;
+    $node->depth = $this->depth + 1;
     array_push($this->children, $node);
     return $node;
   }

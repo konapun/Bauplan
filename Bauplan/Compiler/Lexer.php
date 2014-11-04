@@ -34,8 +34,8 @@ class Lexer {
     '/^(<<<)/'                       => 'T_LITERAL_START',
     '/^(>>>)/'                       => 'T_LITERAL_END',
     '/^(;;.*)/'                      => 'T_SKIP', // ;; inline comment 
-    '/^(\s+)/'                        => 'T_SKIP', // spaces
-    '/^(.+)/'                        => 'T_BAREWORD'
+    '/^(\s+)/'                       => 'T_SKIP', // spaces
+    '/^(.+?)/'                       => 'T_BAREWORD' // anything else
   );
   
   function __construct() {}
@@ -58,6 +58,7 @@ class Lexer {
       }
     }
     
+    var_dump($this->finalize($tokens));
     return $this->finalize($tokens);
   }
   
