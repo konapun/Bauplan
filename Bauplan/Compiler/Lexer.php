@@ -9,7 +9,7 @@ use Bauplan\Compiler\Token;
  * Taken from tutorial here: http://nitschinger.at/Writing-a-simple-lexer-in-PHP
  */
 class Lexer {
-  
+
   private static $terminals = array(
     '/^(\$\$)\s*/'                   => 'T_PREPROC_DECL', // $$
     '/^(\*)\s*/'                     => 'T_TEMPLATE', // *
@@ -33,16 +33,16 @@ class Lexer {
     '/^(;;\))/'                      => 'T_BLOCKCOMMENT_END',
     '/^(<<<)/'                       => 'T_LITERAL_START',
     '/^(>>>)/'                       => 'T_LITERAL_END',
-    '/^(;;.*)/'                      => 'T_SKIP', // ;; inline comment 
+    '/^(;;.*)/'                      => 'T_SKIP', // ;; inline comment
     '/^(\s+)/'                       => 'T_SKIP', // spaces
     '/^(.+?)/'                       => 'T_BAREWORD' // anything else
   );
-  
+
   function __construct() {}
-  
+
   function tokenize($source) {
     if (!is_array($source)) $source = array($source);
-    
+
     $tokens = array();
     foreach ($source as $number => $line) {
       $offset = 0;
@@ -52,20 +52,19 @@ class Lexer {
         if ($result === false) {
           throw new LexerException("Lexing failed at\n\t$string\non source line " . ($line+1) . " or $number");
         }
-        
+
         array_push($tokens, $result);
         $offset += strlen($result->getValue());
       }
     }
     
-    var_dump($this->finalize($tokens));
     return $this->finalize($tokens);
   }
-  
+
   private function finalize($tokens) {
     return $this->removeSkippedTokens($this->handleLiterals($tokens));
   }
-  
+
   /*
    * Re-lex tokens enclosed in literal tags as literals
    * FIXME: Do at concrete syntax tree -> abstract syntax tree transition?
@@ -92,10 +91,10 @@ class Lexer {
           }
       }
     }
-    
+
     return $realTokens;
   }
-  
+
   /*
    * Remove whitespace and comment tokens
    */
@@ -118,17 +117,17 @@ class Lexer {
           }
       }
     }
-    
+
     return $realTokens;
   }
-  
+
   private static function match($string, $lineNumber) {
     foreach (static::$terminals as $pattern => $tokenName) {
       if (preg_match($pattern, $string, $matches)) {
         return new Token($matches[1], $tokenName, $lineNumber);
       }
     }
-    
+
     return false;
   }
 }

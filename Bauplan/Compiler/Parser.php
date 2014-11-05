@@ -6,7 +6,8 @@ use Bauplan\Exception\IOException as IOException;
 use Bauplan\Exception\ParseException as ParseException;
 
 /*
- * A recursive descent parser which outputs an abstract syntax tree
+ * A recursive descent parser which outputs a concrete syntax tree for other
+ * transformations
  */
 class Parser {
   private $currentToken;
@@ -20,7 +21,7 @@ class Parser {
       $lexer = new Lexer();
     }
 
-    $this->syntaxTree = new SyntaxTree(new Token("Bauplan", "ROOT"));
+    $this->syntaxTree = new SyntaxTree(new Token("Bauplan", "ROOT")); // root node for the tree
     $this->lexer = $lexer;
     $this->file = "[plain source]";
   }
@@ -83,7 +84,7 @@ class Parser {
     }
   }
 
-  private function type() {
+  private function complexType() {
     try {
       $this->template();
     }
@@ -112,16 +113,16 @@ class Parser {
     }
   }
 
-  private function complexType() {
+  private function type() {
     try {
-      $this->type();
+      $this->complexType();
     }
     catch (ParseException $e) {
       try {
         $this->primitiveType();
       }
       catch (ParseException $e) {
-        $this->throwError('complex type');
+        $this->throwError('type');
       }
     }
   }
@@ -141,26 +142,7 @@ class Parser {
       }
     }
   }
-  
-  private function valuedType() {
-    try {
-      $this->code();
-    }
-    catch (ParseException $e) {
-      try {
-        $this->instruction();
-      }
-      catch (ParseException $e) { 
-        try {
-          $this->primitiveType();
-        }
-        catch (ParseException $e) {
-          $this->throwError('valued type');
-        }
-      }
-    }
-  }
-  
+
   private function numericType() {
     if (!$this->accept('T_INTEGER')) {
       if (!$this->accept('T_DOUBLE')) {
@@ -231,17 +213,17 @@ class Parser {
       $this->throwError('T_TYPE_OPEN');
     }
   }
-  
+
   private function body() {
     try {
-      $this->complexType();
+      $this->type();
       $this->body();
     }
     catch (ParseException $e) {
       // empty
     }
   }
-  
+
   private function typedefNoBody() {
     if ($this->accept('T_TYPE_OPEN')) {
       if ($this->accept('T_IDENTIFIER')) {
@@ -296,7 +278,7 @@ class Parser {
   }
 
   private function directiveValList() {
-    $this->valuedType();
+    $this->type();
     $this->directiveValRest();
   }
 
@@ -328,7 +310,6 @@ class Parser {
     if ($returnToken->getType() == $symbol) {
       $this->currentToken = array_shift($this->tokens);
 
-      $this->syntaxTree->addChild($returnToken);
       return $returnToken;
     }
     return false;

@@ -1,5 +1,5 @@
 *(template1
   {
-    key | val
+    key | val | :
   }
 )
