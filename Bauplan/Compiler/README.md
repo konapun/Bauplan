@@ -9,7 +9,7 @@ Compilation takes place in the following steps:
     - Lexer -> Tokens
     - Parser -> Concrete syntax tree
     - Concrete syntax tree -> Abstract syntax tree transformation/optimization
-    - TODO
+    - Directive running / public API generation
 
 ## Details
 Parse tree structure:

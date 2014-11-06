@@ -1,38 +1,40 @@
-BAUPLAN := PREPROC_DECLARATIONS TEMPLATE
-PREPROC_DECLARATIONS := PREPROC_DECLARATION PREPROC_DECLARATIONS
-PREPROC_DECLARATION := '$$' IDENTIFIER PREPROC_VAL
+bauplan := preproc_declarations template
+preproc_declarations := preproc_declaration preproc_declarations
+preproc_declaration := "$$" IDENTIFIER preproc_val
                      | empty
-PREPROC_VAL := PRIMITIVE_TYPE
+preproc_val := primitive_type
              | empty
-TYPE: COMPLEX_TYPE | PRIMITIVE_TYPE
-COMPLEX_TYPE := TEMPLATE | SECTION | VARIABLE | CODE | INSTRUCTION
-PRIMITIVE_TYPE := NUMERIC_TYPE | STRING | BOOLEAN
-NUMERIC_TYPE := INTEGER | DOUBLE
-TEMPLATE := "*" TYPEDEF_WITH_BODY
-SECTION := "@" TYPEDEF_WITH_BODY
-CODE := "&" TYPEDEF_WITH_BODY
-INSTRUCTION := "#" TYPEDEF_WITH_BODY
-VARIABLE := "$" TYPEDEF_NO_BODY
-TYPEDEF_WITH_BODY := "(" IDENTIFIER DIRECTIVE_BLOCK BODY ")"
-BODY := TYPE BODY
+
+type: complex_type | primitive_type
+complex_type := template | section | variable | code | instruction
+primitive_type := numeric_type | string | boolean
+numeric_type := INTEGER | DOUBLE
+template := "*" bodied_typedef
+section := "@" bodied_typedef
+code := "&" bodied_typedef
+instruction := "#" bodied_typedef
+variable := "$" unbodied_typedef
+
+bodied_typedef := "(" IDENTIFIER directive_block body ")"
+body := type body
        | empty
-TYPEDEF_NO_BODY := "(" IDENTIFIER DIRECTIVE_BLOCK ")"
-DIRECTIVE_BLOCK := "{" DIRECTIVE_LIST "}"
+unbodied_typedef := "(" IDENTIFIER directive_block ")"
+directive_block := "{" directive_list "}"
                  | empty
-DIRECTIVE_LIST := DIRECTIVE_KEYPART DIRECTIVE_VALPART DIRECTIVE_LIST_REST
+directive_list := IDENTIFIER directive_val directive_list_rest
                 | empty
-DIRECTIVE_LIST_REST := "|" DIRECTIVE_LIST
+directive_list_rest := "|" directive_list
                      | empty
-DIRECTIVE_KEYPART := IDENTIFIER
-DIRECTIVE_VALPART := ":" DIRECTIVE_VAL_LIST
+directive_val := ":" directive_val_list
                    | empty
-DIRECTIVE_VAL_LIST := TYPE DIRECTIVE_VAL_REST
-DIRECTIVE_VAL_REST := "," DIRECTIVE_VAL_LIST
+directive_val_list := type directive_val_rest
+directive_val_rest := "," directive_val_list
                     | empty
+
 INTEGER := # integer
 DOUBLE := # double
 BOOLEAN := "true" | "false"
-STRING := QUOTED_STRING | LITERAL | BAREWORD
+string := QUOTED_STRING | LITERAL | BAREWORD
 QUOTED_STRING := '"' #anything '"'
 LITERAL := "<<<" anything ">>>"
 BAREWORD := # anything else

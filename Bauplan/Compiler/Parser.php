@@ -252,7 +252,7 @@ class Parser {
   }
 
   private function directiveList() {
-    $this->directiveKeypart();
+    $this->identifier();
     $this->directiveValpart();
     $this->directiveListRest();
   }
@@ -262,12 +262,6 @@ class Parser {
       $this->directiveList();
     }
     // empty
-  }
-
-  private function directiveKeypart() {
-    if (!$this->accept('T_IDENTIFIER')) {
-      $this->throwError('T_IDENTIFIER');
-    }
   }
 
   private function directiveValpart() {
