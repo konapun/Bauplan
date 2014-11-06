@@ -1,28 +1,19 @@
 <?php
 namespace Bauplan\Compiler;
-use Bauplan\Compiler\Lexer as Lexer;
-use Bauplan\Compiler\SyntaxTree as SyntaxTree;
-use Bauplan\Exception\IOException as IOException;
-use Bauplan\Exception\ParseException as ParseException;
+use Bauplan\Compiler\CST\Node as Node;
+use Bauplan\Exception\SyntaxError as SyntaxError;
 
 /*
  * A recursive descent parser which outputs a concrete syntax tree for other
  * transformations
+ *
+ * TODO: https://github.com/symfony/expression-language/blob/master/Parser.php
  */
 class Parser {
-  private $currentToken;
-  private $tokens;
-  private $lexer;
+  private $stream;
   private $file;
-  private $syntaxTree;
 
-  function __construct($lexer=null) {
-    if ($lexer == null) {
-      $lexer = new Lexer();
-    }
-
-    $this->syntaxTree = new SyntaxTree(new Token("Bauplan", "ROOT")); // root node for the tree
-    $this->lexer = $lexer;
+  function __construct() {
     $this->file = "[plain source]";
   }
 
@@ -37,74 +28,70 @@ class Parser {
     return $this->parse($source);
   }
 
-  function parse($source) {
-    $tokens = $this->lexer->tokenize($source);
-    return $this->parseTokens($tokens);
+  function setFilename($name) {
+    $this->file = $name;
   }
 
-  function parseTokens($tokens) {
-    $this->tokens = $tokens;
-    $this->currentToken = array_shift($this->tokens);
-    $this->bauplan();
-
-    return $this->syntaxTree;
+  function parse($tokenStream) {
+    $this->stream = $tokenStream;
+    return $this->parseBauplan();
   }
 
   /*** PRODUCTION RULES, BASED OFF doc/grammar.bnf ***/
-  private function bauplan() {
-    $this->preprocDeclarations();
-    $this->template();
+  private function parseBauplan() {
+    $this->parsePreprocDeclarations(); // TODO: should take place in a separate parse loop
+    $node = $this->parseTemplate();
+    if ($this->stream->hasNext()) { // shoule be end of stream
+      $token = $this->stream->getCurrent();
+      throw new SyntaxError(sprintf('Unexpected token "%s" of type "%s"', $token->getValue(), $token->getType()));
+    }
+
+    return $node;
   }
 
-  private function preprocDeclarations() {
-    if ($this->preprocDeclaration() !== false) $this->preprocDeclarations();
+  private function parsePreprocDeclarations() {
+    if ($this->parsePreprocDeclaration() !== false) $this->parsePreprocDeclarations();
   }
 
-  private function preprocDeclaration() {
-    if ($this->accept('T_PREPROC_DECL')) {
-      if ($this->accept('T_IDENTIFIER')) {
-        $this->preprocVal();
-      }
-      else {
-        $this->throwError('T_IDENTIFIER');
-      }
+  private function parsePreprocDeclaration() {
+    if ($this->stream->getCurrent()->test(Token::T_PREPROC_DECL)) {
+      $this->stream->expect(Token::T_IDENTIFIER, '', 'Missing preprocessor declaration key');
     }
     else {
-      // empty
-      return false; // Fix for infinite recursion on production rule
+      return false;
     }
   }
 
-  private function preprocVal() {
+  private function parsePreprocVal() { // TODO
     try {
-      $this->primitiveType();
+      $this->parsePrimitiveType();
     }
-    catch (ParseException $e) {
+    catch (SyntaxError $e) {
       // empty
     }
   }
 
-  private function complexType() {
+  private function parseComplexType() {
     try {
-      $this->template();
+      $this->parseTemplate();
     }
-    catch (ParseException $e) {
+    catch (SyntaxError $e) {
       try {
-        $this->section();
+        $this->parseSection();
       }
-      catch (ParseException $e) {
+      catch (SyntaxError $e) {
         try {
-          $this->variable();
+          $this->parseVariable();
         }
-        catch (ParseException $e) {
+        catch (SyntaxError $e) {
           try {
-            $this->code();
+            $this->parseCode();
           }
-          catch (ParseException $e) {
+          catch (SyntaxError $e) {
             try {
-              $this->instruction();
+              $this->parseInstruction();
             }
-            catch (ParseException $e) {
+            catch (SyntaxError $e) {
               $this->throwError('template, section, variable, code, or instruction');
             }
           }
@@ -113,37 +100,37 @@ class Parser {
     }
   }
 
-  private function type() {
+  private function parseType() {
     try {
-      $this->complexType();
+      $this->parseComplexType();
     }
-    catch (ParseException $e) {
+    catch (SyntaxError $e) {
       try {
-        $this->primitiveType();
+        $this->parsePrimitiveType();
       }
-      catch (ParseException $e) {
+      catch (SyntaxError $e) {
         $this->throwError('type');
       }
     }
   }
 
-  private function primitiveType() {
+  private function parsePrimitiveType() {
     if (!$this->accept('T_BOOLEAN')) {
       try {
-        $this->numericType();
+        $this->parseNumericType();
       }
-      catch (ParseException $e) {
+      catch (SyntaxError $e) {
         try {
-          $this->string();
+          $this->parseString();
         }
-        catch (ParseException $e) {
+        catch (SyntaxError $e) {
           $this->throwError('primitive type');
         }
       }
     }
   }
 
-  private function numericType() {
+  private function parseNumericType() {
     if (!$this->accept('T_INTEGER')) {
       if (!$this->accept('T_DOUBLE')) {
         $this->throwError('numeric type');
@@ -151,56 +138,56 @@ class Parser {
     }
   }
 
-  private function template() {
+  private function parseTemplate() {
     if ($this->accept('T_TEMPLATE')) {
-      $this->typedefWithBody();
+      $this->parseTypedefWithBody();
     }
     else {
       $this->throwError('T_TEMPLATE');
     }
   }
 
-  private function section() {
+  private function parseSection() {
     if ($this->accept('T_SECTION')) {
-      $this->typedefWithBody();
+      $this->parseTypedefWithBody();
     }
     else {
       $this->throwError('T_SECTION');
     }
   }
 
-  private function variable() {
+  private function parseVariable() {
     if ($this->accept('T_VARIABLE')) {
-      $this->typedefNoBody();
+      $this->parseTypedefNoBody();
     }
     else {
       $this->throwError('T_VARIABLE');
     }
   }
 
-  private function code() {
+  private function parseCode() {
     if ($this->accept('T_CODE')) {
-      $this->typedefNoBody();
+      $this->parseTypedefNoBody();
     }
     else {
       $this->throwError('T_CODE');
     }
   }
 
-  private function instruction() {
+  private function parseInstruction() {
     if ($this->accept('T_INSTRUCTION')) {
-       $this->typedefWithBody();
+       $this->parseTypedefWithBody();
     }
     else {
       $this->throwError('T_INSTRUCTION');
     }
   }
 
-  private function typedefWithBody() {
+  private function parseTypedefWithBody() {
     if ($this->accept('T_TYPE_OPEN')) {
       if ($this->accept('T_IDENTIFIER')) {
-        $this->directiveBlock();
-        $this->body();
+        $this->parseDirectiveBlock();
+        $this->parseBody();
         if (!$this->accept('T_TYPE_CLOSE')) {
           $this->throwError('T_TYPE_CLOSE');
         }
@@ -214,20 +201,20 @@ class Parser {
     }
   }
 
-  private function body() {
+  private function parseBody() {
     try {
-      $this->type();
-      $this->body();
+      $this->parseType();
+      $this->parseBody();
     }
-    catch (ParseException $e) {
+    catch (SyntaxError $e) {
       // empty
     }
   }
 
-  private function typedefNoBody() {
+  private function parseTypedefNoBody() {
     if ($this->accept('T_TYPE_OPEN')) {
       if ($this->accept('T_IDENTIFIER')) {
-        $this->directiveBlock();
+        $this->parseDirectiveBlock();
         if (!$this->accept('T_TYPE_CLOSE')) {
           $this->throwError('T_TYPE_CLOSE');
         }
@@ -241,9 +228,9 @@ class Parser {
     }
   }
 
-  private function directiveBlock() {
+  private function parseDirectiveBlock() {
     if ($this->accept('T_DIRBLOCK_OPEN')) {
-      $this->directiveList();
+      $this->parseDirectiveList();
       if (!$this->accept('T_DIRBLOCK_CLOSE')) {
         $this->throwError('T_DIRBLOCK_CLOSE');
       }
@@ -251,39 +238,39 @@ class Parser {
     // empty
   }
 
-  private function directiveList() {
-    $this->identifier();
-    $this->directiveValpart();
-    $this->directiveListRest();
+  private function parseDirectiveList() {
+    $this->parseIdentifier();
+    $this->parseDirectiveValpart();
+    $this->parseDirectiveListRest();
   }
 
-  private function directiveListRest() {
+  private function parseDirectiveListRest() {
     if ($this->accept('T_DIRECTIVE_SEP')) {
-      $this->directiveList();
+      $this->parseDirectiveList();
     }
     // empty
   }
 
-  private function directiveValpart() {
+  private function parseDirectiveValpart() {
     if ($this->accept('T_DIR_KEYVAL_SEP')) {
-      $this->directiveValList();
+      $this->parseDirectiveValList();
     }
     // empty
   }
 
-  private function directiveValList() {
-    $this->type();
-    $this->directiveValRest();
+  private function parseDirectiveValList() {
+    $this->parseType();
+    $this->parseDirectiveValRest();
   }
 
-  private function directiveValRest() {
+  private function parseDirectiveValRest() {
     if ($this->accept('T_VAL_SEP')) {
-      $this->directiveValList();
+      $this->parseDirectiveValList();
     }
     // empty
   }
 
-  private function string() {
+  private function parseString() {
     if (!$this->accept('T_QUOTED_STRING')) {
       if (!$this->accept('T_LITERAL')) {
         if (!$this->accept('T_BAREWORD')) {
@@ -295,10 +282,10 @@ class Parser {
 
   private function throwError($expected) {
     $currtok = $this->currentToken;
-    throw new ParseException("Expected $expected, got \"" . $currtok->getValue() . "\" of type " . $currtok->getType() . "\n\tat line " . $currtok->getLine() . " in file " . $this->file);
+    throw new SyntaxError("Expected $expected, got \"" . $currtok->getValue() . "\" of type " . $currtok->getType() . "\n\tat line " . $currtok->getLine() . " in file " . $this->file);
   }
 
-  /*** HELPERS ***/
+  //FIXME - REMOVE; handle through token and token stream
   private function accept($symbol) {
     $returnToken = $this->currentToken;
     if ($returnToken->getType() == $symbol) {

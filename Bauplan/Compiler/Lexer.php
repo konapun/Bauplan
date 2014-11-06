@@ -1,41 +1,43 @@
 <?php
 namespace Bauplan\Compiler;
-use Bauplan\Exception\LexerException;
-use Bauplan\Compiler\Token;
+use Bauplan\Exception\SyntaxError;
 
 /*
  * Break source into tokens to be consumed by the parser
  *
  * Taken from tutorial here: http://nitschinger.at/Writing-a-simple-lexer-in-PHP
+ *
+ * FIXME - retain quotes and literal start/end tokens or convert here? (probably
+ * keep and include in CST? See how other languages handle heredocs)
  */
 class Lexer {
 
   private static $terminals = array(
-    '/^(\$\$)\s*/'                   => 'T_PREPROC_DECL', // $$
-    '/^(\*)\s*/'                     => 'T_TEMPLATE', // *
-    '/^(@)\s*/'                      => 'T_SECTION', // @
-    '/^(\$)\s*/'                     => 'T_VARIABLE', // $
-    '/^(&)\s*/'                      => 'T_CODE', // &
-    '/^(#)\s*/'                      => 'T_INSTRUCTION', // #
-    '/^(\()\s*/'                     => 'T_TYPE_OPEN', // (
-    '/^(\))\s*/'                     => 'T_TYPE_CLOSE', // )
-    '/^({)\s*/'                      => 'T_DIRBLOCK_OPEN', // {
-    '/^(})\s*/'                      => 'T_DIRBLOCK_CLOSE', // }
-    '/^(:)\s*/'                      => 'T_DIR_KEYVAL_SEP', // :
-    '/^(\|)\s*/'                     => 'T_DIRECTIVE_SEP', // |
-    '/^(,)\s*/'                      => 'T_VAL_SEP', // ,
-    '/^(\d+)\s*/'                    => 'T_INTEGER', // 0-9
-    '/^(\d+\.?\d*$)\s*/'             => 'T_DOUBLE',
-    '/^(true|false)\s*/'             => 'T_BOOL',
-    '/^(".*")\s*/'                   => 'T_QUOTED_STRING',
-    '/^([$A-Z_\-\+][0-9A-Z_\-\+]*)\s*/i' => 'T_IDENTIFIER',
-    '/^(;;\()/'                      => 'T_BLOCKCOMMENT_START',
-    '/^(;;\))/'                      => 'T_BLOCKCOMMENT_END',
-    '/^(<<<)/'                       => 'T_LITERAL_START',
-    '/^(>>>)/'                       => 'T_LITERAL_END',
-    '/^(;;.*)/'                      => 'T_SKIP', // ;; inline comment
-    '/^(\s+)/'                       => 'T_SKIP', // spaces
-    '/^(.+?)/'                       => 'T_BAREWORD' // anything else
+    '/^(\$\$)\s*/'                   => Token::T_PREPROC_DECL, // $$
+    '/^(\*)\s*/'                     => Token::T_TEMPLATE, // *
+    '/^(@)\s*/'                      => Token::T_SECTION, // @
+    '/^(\$)\s*/'                     => Token::T_VARIABLE, // $
+    '/^(&)\s*/'                      => Token::T_CODE, // &
+    '/^(#)\s*/'                      => Token::T_INSTRUCTION, // #
+    '/^(\()\s*/'                     => Token::T_TYPE_OPEN, // (
+    '/^(\))\s*/'                     => Token::T_TYPE_CLOSE, // )
+    '/^({)\s*/'                      => Token::T_DIRBLOCK_OPEN, // {
+    '/^(})\s*/'                      => Token::T_DIRBLOCK_CLOSE, // }
+    '/^(:)\s*/'                      => Token::T_DIR_KEYVAL_SEP, // :
+    '/^(\|)\s*/'                     => Token::T_DIRECTIVE_SEP, // |
+    '/^(,)\s*/'                      => Token::T_VAL_SEP, // ,
+    '/^(\d+)\s*/'                    => Token::T_INTEGER, // 0-9
+    '/^(\d+\.?\d*$)\s*/'             => Token::T_DOUBLE,
+    '/^(true|false)\s*/'             => Token::T_BOOL,
+    '/^(".*")\s*/'                   => Token::T_QUOTED_STRING,
+    '/^([$A-Z_\-\+][0-9A-Z_\-\+]*)\s*/i' => Token::T_IDENTIFIER,
+    '/^(;;\()/'                      => 'BLOCKCOMMENT_START',
+    '/^(;;\))/'                      => 'BLOCKCOMMENT_END',
+    '/^(<<<)/'                       => 'LITERAL_START',
+    '/^(>>>)/'                       => 'LITERAL_END',
+    '/^(;;.*)/'                      => 'SKIP', // ;; inline comment
+    '/^(\s+)/'                       => 'SKIP', // spaces
+    '/^(.+?)/'                       => Token::T_BAREWORD // anything else
   );
 
   function __construct() {}
@@ -50,15 +52,15 @@ class Lexer {
         $string = substr($line, $offset);
         $result = static::match($string, $number+1);
         if ($result === false) {
-          throw new LexerException("Lexing failed at\n\t$string\non source line " . ($line+1) . " or $number");
+          throw new SyntaxError(sprintf('Unexpected character "%s"', $offset), $offset); // FIXME
         }
 
         array_push($tokens, $result);
         $offset += strlen($result->getValue());
       }
     }
-    
-    return $this->finalize($tokens);
+
+    return new TokenStream($this->finalize($tokens));
   }
 
   private function finalize($tokens) {
@@ -75,11 +77,11 @@ class Lexer {
     $realTokens = array();
     foreach ($tokens as $token) {
       switch ($token->getType()) {
-        case 'T_LITERAL_START':
+        case 'LITERAL_START':
           $inLiteral = true;
           break;
-        case 'T_LITERAL_END':
-          array_push($realTokens, new Token($literalValue, 'T_LITERAL', $token->getLine()));
+        case 'LITERAL_END':
+          array_push($realTokens, new Token($literalValue, 'T_LITERAL', $token->getCursor()));
           $inLiteral = false;
           break;
         default:
@@ -103,13 +105,13 @@ class Lexer {
     $realTokens = array();
     foreach ($tokens as $token) {
       switch ($token->getType()) {
-        case 'T_BLOCKCOMMENT_START':
+        case 'BLOCKCOMMENT_START':
           $inBlockComment = true;
           break;
-        case 'T_BLOCKCOMMENT_END':
+        case 'BLOCKCOMMENT_END':
           $inBlockComment = false;
           break;
-        case 'T_SKIP':
+        case 'SKIP':
           break;
         default:
           if (!$inBlockComment) {

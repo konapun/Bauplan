@@ -12,20 +12,26 @@ include_once($base . 'DirectiveLoader.php');
 
 include_once($compilerBase . 'Lexer.php');
 include_once($compilerBase . 'Parser.php');
-include_once($compilerBase . 'SyntaxTree.php');
+include_once($compilerBase . 'Compiler.php');
 include_once($compilerBase . 'Token.php');
+include_once($compilerBase . 'TokenStream.php');
 include_once($compilerBase . 'TreeTraversal.php');
+include_once($compilerBase . 'CST' . DIRECTORY_SEPARATOR . 'Node.php');
 
 include_once($exporterBase . 'TreeExporter.php');
 include_once($exporterBase . 'ArrayExporter.php');
 include_once($exporterBase . 'JSONExporter.php');
 
 include_once($exceptionBase . 'IOException.php');
-include_once($exceptionBase . 'LexerException.php');
-include_once($exceptionBase . 'ParseException.php');
+include_once($exceptionBase . 'SyntaxError.php');
 
 include_once($roleBase . 'Cloneable.php');
 include_once($roleBase . 'Renderable.php');
 // TODO
 
+// TODO: Instantiate runtime, return API tree
+
+function __construct() {
+
+}
 ?>
