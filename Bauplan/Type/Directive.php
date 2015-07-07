@@ -9,6 +9,7 @@ interface Directive {
   function registersAs(); // the name of this directive as exposed to the user
   function worksWith($type); // returns true or false depending on whether or not this directive can be used with the type that's trying to register it
   function register($type); // code called when this directive registers with a Type
-  function execute($arglist); // what happens when this directive is called
+  function onCompile($callback); // code this directive can run when its relevant Type is being compiled
+  function execute($arglist); // what happens when this directive is called at runtime
 }
 ?>
