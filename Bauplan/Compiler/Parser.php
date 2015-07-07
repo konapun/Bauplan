@@ -15,6 +15,7 @@ class Parser {
 
   function __construct() {
     $this->file = "[plain source]";
+
   }
 
   /*** PUBLIC API ***/
@@ -33,6 +34,7 @@ class Parser {
   }
 
   function parse($tokenStream) {
+    $tokenStream->setFile($this->file);
     $this->stream = $tokenStream;
     return $this->parseBauplan();
   }
@@ -54,8 +56,9 @@ class Parser {
   }
 
   private function parsePreprocDeclaration() {
-    if ($this->stream->getCurrent()->test(Token::T_PREPROC_DECL)) {
-      $this->stream->expect(Token::T_IDENTIFIER, '', 'Missing preprocessor declaration key');
+    if ($this->stream->expect(Token::T_PREPROC_DECL)) {
+      $this->stream->expect(Token::T_IDENTIFIER, 'Missing preprocessor declaration key');
+      $this->parsePreprocVal();
     }
     else {
       return false;
@@ -63,40 +66,13 @@ class Parser {
   }
 
   private function parsePreprocVal() { // TODO
-    try {
-      $this->parsePrimitiveType();
-    }
-    catch (SyntaxError $e) {
-      // empty
-    }
+    $this->parsePrimitiveType(); // optional
   }
 
   private function parseComplexType() {
-    try {
-      $this->parseTemplate();
-    }
-    catch (SyntaxError $e) {
-      try {
-        $this->parseSection();
-      }
-      catch (SyntaxError $e) {
-        try {
-          $this->parseVariable();
-        }
-        catch (SyntaxError $e) {
-          try {
-            $this->parseCode();
-          }
-          catch (SyntaxError $e) {
-            try {
-              $this->parseInstruction();
-            }
-            catch (SyntaxError $e) {
-              $this->throwError('template, section, variable, code, or instruction');
-            }
-          }
-        }
-      }
+    $complexNode = $this->parseTemplate() || $this->parseSection() || $this->parseVariable() || $this->parseCode() || $this->parseInstruction();
+    if (!$complexNode) {
+      throw new SyntaxError('Expected T_TEMPLATE, T_SECTION, T_VARIABLE, T_CODE, or T_INSTRUCTION');
     }
   }
 
@@ -115,19 +91,14 @@ class Parser {
   }
 
   private function parsePrimitiveType() {
-    if (!$this->accept('T_BOOLEAN')) {
-      try {
-        $this->parseNumericType();
-      }
-      catch (SyntaxError $e) {
-        try {
-          $this->parseString();
-        }
-        catch (SyntaxError $e) {
-          $this->throwError('primitive type');
-        }
-      }
-    }
+    return $this->stream->expectOneOf(array(
+      Token::T_BOOLEAN,
+      Token::T_INTEGER,
+      Token::T_DOUBLE,
+      Token::T_QUOTED_STRING,
+      Token::T_LITERAL,
+      Token::T_BAREWORD
+    ));
   }
 
   private function parseNumericType() {
@@ -139,76 +110,53 @@ class Parser {
   }
 
   private function parseTemplate() {
-    if ($this->accept('T_TEMPLATE')) {
-      $this->parseTypedefWithBody();
-    }
-    else {
-      $this->throwError('T_TEMPLATE');
-    }
+    $template = $this->stream->expect(Token::T_TEMPLATE, 'Missing template');
+    $this->parseTypedefWithBody();
+    return $template;
   }
 
   private function parseSection() {
-    if ($this->accept('T_SECTION')) {
-      $this->parseTypedefWithBody();
-    }
-    else {
-      $this->throwError('T_SECTION');
-    }
+    $section = $this->stream->expect(Token::T_SECTION, 'Missing section');
+    $this->parseTypedefWithBody();
+    return $section;
   }
 
   private function parseVariable() {
-    if ($this->accept('T_VARIABLE')) {
-      $this->parseTypedefNoBody();
-    }
-    else {
-      $this->throwError('T_VARIABLE');
-    }
+    $variable = $this->stream->expect(Token::T_VARIABLE, 'Missing variable');
+    $this->parseTypedefNoBody();
+    return $variable;
   }
 
   private function parseCode() {
-    if ($this->accept('T_CODE')) {
-      $this->parseTypedefNoBody();
-    }
-    else {
-      $this->throwError('T_CODE');
-    }
+    $code = $this->stream->expect(Token::T_CODE, 'Missing code');
+    $this->parseTypedefWithBody();
+    return $code;
   }
 
   private function parseInstruction() {
-    if ($this->accept('T_INSTRUCTION')) {
-       $this->parseTypedefWithBody();
-    }
-    else {
-      $this->throwError('T_INSTRUCTION');
-    }
+    $instruction = $this->stream->expect(Token::T_INSTRUCTION, 'Missing instruction');
+    $this->parseTypedefWithBody();
+    return $instruction;
   }
 
   private function parseTypedefWithBody() {
-    if ($this->accept('T_TYPE_OPEN')) {
-      if ($this->accept('T_IDENTIFIER')) {
-        $this->parseDirectiveBlock();
-        $this->parseBody();
-        if (!$this->accept('T_TYPE_CLOSE')) {
-          $this->throwError('T_TYPE_CLOSE');
-        }
-      }
-      else {
-        $this->throwError('T_IDENTIFIER');
-      }
-    }
-    else {
-      $this->throwError('T_TYPE_OPEN');
-    }
+    // FIXME: Build node - these should all be siblings (CST should be able to add siblings)
+    $this->stream->expect(Token::T_TYPE_OPEN, 'Missing (');
+    $this->stream->expect(Token::T_IDENTIFIER, 'Type declaration requires an identifier');
+    $directiveBlockNode = $this->parseDirectiveBlock();
+    $typeBodyNode = $this->parseBody();
+    $this->stream->expect(Token::T_TYPE_CLOSE, 'Missing )');
   }
 
   private function parseBody() {
-    try {
-      $this->parseType();
-      $this->parseBody();
+    $node = $this->parseType();
+    if ($node) {
+      $bodyNode = $this->parseBody();
+      // TODO: Sibling? Child?
+      return $node;
     }
-    catch (SyntaxError $e) {
-      // empty
-    }
+    // optional
+    return $node;
   }
 
   private function parseTypedefNoBody() {
@@ -229,17 +177,17 @@ class Parser {
   }
 
   private function parseDirectiveBlock() {
-    if ($this->accept('T_DIRBLOCK_OPEN')) {
+    $blockNode = $this->stream->expect(Token::T_DIRBLOCK_OPEN);
+    if ($blockNode) {
       $this->parseDirectiveList();
-      if (!$this->accept('T_DIRBLOCK_CLOSE')) {
-        $this->throwError('T_DIRBLOCK_CLOSE');
-      }
+      $this->stream->expect(Token::T_DIRBLOCK_CLOSE, 'Missing closing bracket for directive block');
     }
-    // empty
+    // optional
+    return $blockNode;
   }
 
   private function parseDirectiveList() {
-    $this->parseIdentifier();
+    $this->stream->expect(Token::T_IDENTIFIER, 'Missing directive key');
     $this->parseDirectiveValpart();
     $this->parseDirectiveListRest();
   }
@@ -287,6 +235,7 @@ class Parser {
 
   //FIXME - REMOVE; handle through token and token stream
   private function accept($symbol) {
+    return true;
     $returnToken = $this->currentToken;
     if ($returnToken->getType() == $symbol) {
       $this->currentToken = array_shift($this->tokens);

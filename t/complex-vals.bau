@@ -1,10 +1,15 @@
+;;(
+  Syntax test using complex type returns values as directive values, which
+  should be allowed
+;;)
+$$TEST true
 *(complex-vals
-  
+
   $(example1 {
       value: #(add {args: 1, 2})
     }
   )
-  
+
   $(example2 {
     value: &(lambda {language: "php"} <<<
       return 1 + 3;

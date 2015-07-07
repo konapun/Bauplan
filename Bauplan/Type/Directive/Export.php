@@ -3,17 +3,20 @@ namespace Bauplan\Type\Directive;
 use Bauplan\Type\Diretive as Directive;
 use Bauplan\ComplexType as Type;
 
-class Value implements Directive {
+/*
+ * Exports a Code-type's ID as an instruction that acts on arguments
+ */
+class Export implements Directive {
 
   function registersAs() {
-    return 'value';
+    return 'export';
   }
 
   function worksWith($type) {
-    return $type == Type::VARIABLE;
+    return $type == Type::CODE;
   }
 
-  function register($variable) {
+  function register($code) {
 
   }
 

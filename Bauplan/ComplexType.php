@@ -22,6 +22,10 @@ abstract class ComplexType implements \Serializable, Renderable, Cloneable {
     $this->directives = array();
   }
 
+  function getDirectives() {
+
+  }
+  
   function callDirective($name) {
 
   }

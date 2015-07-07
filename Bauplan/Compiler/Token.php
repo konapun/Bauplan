@@ -19,7 +19,7 @@ class Token {
   const T_VAL_SEP = 'value separator';
   const T_INTEGER = 'integer';
   const T_DOUBLE = 'double';
-  const T_BOOL = 'boolean';
+  const T_BOOLEAN = 'boolean';
   const T_QUOTED_STRING = 'quoted string';
   const T_IDENTIFIER = 'identifier';
   const T_LITERAL = 'literal';
@@ -47,8 +47,21 @@ class Token {
     return $this->cursor;
   }
 
-  function test($type, $value=null) { // taken from the symfony project
-    return $this->type === $type && (null === $value || $this->value == $value);
+  function compareType($type) {
+    return $this->type === $type;
+  }
+
+  function oneOf($types) {
+    $thisType = $this->type;
+    foreach ($types as $type) {
+      if ($type === $thisType) return true;
+    }
+
+    return false;
+  }
+
+  function __toString() {
+    return sprintf("%s:%s (%d)", $this->type, $this->value, $this->cursor);
   }
 }
 ?>

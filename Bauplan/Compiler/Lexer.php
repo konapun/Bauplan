@@ -28,7 +28,7 @@ class Lexer {
     '/^(,)\s*/'                      => Token::T_VAL_SEP, // ,
     '/^(\d+)\s*/'                    => Token::T_INTEGER, // 0-9
     '/^(\d+\.?\d*$)\s*/'             => Token::T_DOUBLE,
-    '/^(true|false)\s*/'             => Token::T_BOOL,
+    '/^(true|false)\s*/'             => Token::T_BOOLEAN,
     '/^(".*")\s*/'                   => Token::T_QUOTED_STRING,
     '/^([$A-Z_\-\+][0-9A-Z_\-\+]*)\s*/i' => Token::T_IDENTIFIER,
     '/^(;;\()/'                      => 'BLOCKCOMMENT_START',
