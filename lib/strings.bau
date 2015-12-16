@@ -1,0 +1,12 @@
+*(strings {
+    export-lib
+  }
+
+  &(to-lower {
+      language: "php"
+      fetch-args: $(args)
+    }
+
+    
+  )
+)
