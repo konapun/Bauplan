@@ -1,0 +1,6 @@
+*(attributes {
+    namespace: "html"
+  }
+
+  @(lambda {if-exists: id} id="$(id)") @(lambda {if-exists: classes} class="@(classes $(class))")
+)
