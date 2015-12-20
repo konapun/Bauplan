@@ -1,0 +1,77 @@
+*(lambda {
+    import: "stdlib" |
+    set-truthy: #(create-sym #(case-insensitive "yes", "y", "yeah", "ok", "okay", "true")) | ;; sets truthy values for entire scope
+    set-falsy:  #(create-sym #(case-insensitive "no" "n", "nope", "nah", "false"))
+  }
+
+)
+
+*(stdlib {
+    as-library ;; automatically exports fns on import
+  }
+
+  &(create-sym {
+      exportable ;; as-library automatically does this
+    }
+
+    $this->getArguments()->forEach(function($argument) {
+
+    });
+  )
+)
+
+*(string {
+    as-library
+  }
+
+  ;;(
+    Expand
+  ;;)
+  &(lower-case {
+      language: php
+    }
+
+  )
+)
+
+<?php
+
+class StringLibrary extends XS {
+
+  function exportFunctions() {
+    return array(
+      'lower-case' => function($arguments) {
+        $arguments->map(function($argument) {
+          return strtolower($argument);
+        });
+      },
+      'upper-case' => function($arguments) {
+        $arguments->map(function($argument) {
+          return strtoupper($argument);
+        });
+      },
+      'concat' => function($arguments) {
+        $concatted = "";
+        $arguments->forEach(function($argument) {
+          $concatted .= $argument->requireType(Type::STRING);
+        });
+        return $concatted;
+      }
+    );
+  }
+}
+?>
+
+<?php
+
+class Stdlib extends XS {
+
+  function exportFunctions() {
+    return array(
+      'apply' => function($arguments) {
+
+      }
+    );
+  }
+}
+?>

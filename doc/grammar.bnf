@@ -1,3 +1,18 @@
+document
+  preproc_declarations template
+
+template
+  * block
+
+block
+  ( identifier block )
+  ( identifier directives block )
+
+definition
+  ( identifier )
+  ( identifier directives )
+
+
 bauplan := preproc_declarations template
 preproc_declarations := preproc_declaration preproc_declarations
 preproc_declaration := "$$" IDENTIFIER preproc_val

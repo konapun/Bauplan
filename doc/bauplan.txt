@@ -1,0 +1,293 @@
+*(template {
+      global: &(lambda return "TEST";)
+
+  }
+
+  @(lambda ;; inits
+    $(display: true)
+  )
+
+  @(lambda {display-if-defined: var}
+)
+
+*(template
+
+  @(lambda { foreach: @(lambda {values: 1, 2, 3, 4}) [as] value }
+    $(value)
+  )
+)
+
+*(html-extensions {
+    namespace: "html"
+  }
+
+  &(make-attrs { arguments: args }
+    $attrs = $args->unroll();
+
+    foreach ($attrs as $attr) {
+      $section = TypeFactory::create(Bauplan::Type::Section);
+
+    }
+  )
+
+)
+
+*(html-attributes {
+    namespace: "html"
+  }
+
+  @(lambda {if-exists: id} id="$(id)") @(lambda {if-exists: classes} class="@(classes)")
+)
+
+*(html-table {
+    namespace: "html/elements"
+  }
+
+  <table *(lambda {import: "html/html-attributes"})>
+    <thead *(lambda {import: "html/html-attributes"})>
+      <tr *(lambda {import: "html/html-attributes"})>
+        @(columns
+          <td *(lambda {import: "html/html-attributes"})>$(row)</td>
+        )
+      </tr>
+    </thead>
+    <tbody>
+      @(rows
+        <tr *(lambda {import: "html/html-attributes"})>
+
+        </tr>
+      )
+    </tbody>
+  </table>
+)
+
+*(lambda {load-ns: "html/table"}
+  &(lambda {lang: config} <<<
+    header-rows:
+  >>>)
+)
+
+template language tokens
+- lambda
+- *
+- @
+- $
+- &
+- (
+- )
+- {
+- }
+- ;;
+- ;;(
+- ;;)
+
+types
+- template
+- section
+- variable
+- code
+- string (within directives)
+- boolean (within directives)
+- numeric (within directives)
+- expression? (within directives) - like code but exists in same context as everything else
+
+(http://json.org/ for BNF example)
+distinct parsers
+- template parser (parses template, section, variable, etc - top level)
+-- tokens:
+--- terminal: "*", "(", ")", "{",  "}"
+--- non-terminal: word
+- directive parser - only active in directive blocks which makes it so directives can use a lot of syntax and not have to worry about escaping outside of them
+-- directive tokens:
+--- terminal: ":", ",", "(", ")", "\"", "|"
+--- non-terminal: string, coercing-string,
+-- note: a directive can also use code blocks
+- code parser - multiple available (php, scheme, etc) - bauplan provides extensions so the language can interact with the user API
+
+other ideas
+- user API is built from the syntax tree but is not the tree itself
+-- user API doesn't expose any private functionality, unlike the previous version where this functionality was available through underscore methods
+- bauplan itself, without code types, is turing complete though this is not a design goal:
+    @(lambda {unless &(false)} Here) <--> if (!false) echo "Here"
+----------------------------------
+BNF
+
+Template Language
+-----------------
+document
+  preprocessor template
+  template
+
+preprocessor
+  TODO
+
+template
+  "*" block
+
+section
+  "@" block
+
+code
+  "&" block
+
+variable
+  "$" definition
+
+typedef
+  template
+  section
+  code
+  variable
+
+definition
+  ( identifier directives )
+
+block
+  ( identifier directives )
+  ( identifier directives block )
+
+directives
+  { }
+  { any }
+
+comment
+  ;; *
+
+any
+  anything not matched from above
+
+Directive Language
+------------------
+directive_language
+  members
+
+members
+  directive
+  directive | members
+
+directive
+  key
+  key : values
+
+values
+  evaluated
+  evaluated comma
+
+evaluated
+  stringy
+
+comma
+  ,
+  [ any ]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+----------------------------------
+*(example
+
+  @(lambda {display: false} ;; init block
+
+  )
+)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@(loop-var {values: 1, 2, 3, 4, 5})
+@(lambda {foreach: loop-var (as) var} ;; (anything) is a stand in for comma
+  $(var)
+)
+
+<?php
+
+class ValuesDirective extends Directive {
+
+  function install($owner) {
+
+  }
+
+  function call($args) {
+
+  }
+}
+
+class ForeachDirective extends Directive {
+
+  function __construct() {
+
+  }
+
+  function call($args) {
+
+  }
+}
+
+class Arguments {
+
+}
+
+?>
+
+
+
+
+
+
+
+================================================================================
+https://github.com/goruby/goruby/commit/e7e2f2f26f940ce111796535328e6d7d4b1a7743
+(more http://www.icosaedro.it/articoli/php-syntax-ebnf.txt)
+
+document
+  preprocessor_statements template
+  template
+
+preprocessor_statements
+  $$ preprocessor_characters
+  $$ preprocessor_characters ; preprocessor_statements
+
+template
+  * block_definition
+
+block_definition
+  ( identifier directives body )
+  ( identifier directives )
+  ( identifier body )
+  ( identifier )
+
+body
+  literal_statement
+
+literal_statement
+  <<< any >>>
+
+directives
+  { }
+  { free_text }
