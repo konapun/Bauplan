@@ -148,12 +148,16 @@ block
 
 directives
   { }
-  { any }
+  { string }
 
 comment
   ;; *
 
-any
+identifier
+  LAMBDA
+  string
+
+string
   anything not matched from above
 
 Directive Language
@@ -290,4 +294,4 @@ literal_statement
 
 directives
   { }
-  { free_text }
+  { any }

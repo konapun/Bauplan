@@ -1,5 +1,5 @@
 <?php
-namespace Bauplan\Compiler;
+namespace Bauplan\Language;
 
 use Bauplan\Exception\SyntaxError as SyntaxError;
 
@@ -9,15 +9,12 @@ use Bauplan\Exception\SyntaxError as SyntaxError;
  *
  * Adapted from the Symfony project
  */
-class TokenStream {
-  private $current;
-  private $tokens;
+class TokenStream extends \ArrayIterator {
   private $position;
   private $file;
 
   function __construct($tokens, $file=null) {
-    $this->tokens = $tokens;
-    $this->current = $tokens[0];
+    parent::__construct($tokens);
     $this->position = 0;
     $this->file = $file;
   }
@@ -26,30 +23,8 @@ class TokenStream {
     $this->file = $file;
   }
 
-  function getCurrent() {
-    return $this->current;
-  }
-
   function getFile() {
     return $this->file;
-  }
-
-  function hasNext() {
-    return $this->position < count($this->tokens)-1;
-    return isset($this->tokens[$this->position]);
-  }
-
-  /*
-   * Return the next token in the stream if one exists or throw an exception if
-   * the end of the stream has been reached
-   */
-  function next() {
-    if (!$this->hasNext()) {
-      throw new SyntaxError("Unexpected end of expression", $this->current->getCursor(), $this->file);
-    }
-
-    $this->current = $this->tokens[++$this->position];
-    return $this->current;
   }
 
   /*

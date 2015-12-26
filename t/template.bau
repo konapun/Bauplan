@@ -1,0 +1,11 @@
+;;(
+  A block comment. Everything here gets discarded during lexing
+  *(test { test } $&*#*)
+;;)
+*(lambda { directive stuff which should be ignored while in template language }
+  ;; a comment which can contain anything ;; * & <<< HERE
+  <<<
+    Stuff which should stay freeform
+    * @ ( )
+  >>>
+)

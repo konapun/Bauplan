@@ -1,7 +1,7 @@
 <?php
 include_once('Bauplan.php');
-use Bauplan\Compiler\Compiler as Compiler;
-use Bauplan\Compiler\SyntaxTreeExporter\ArrayExporter as TreeExporter;
+//use Bauplan\CLI;
+use Bauplan\Compiler\Language\Template\Compiler as Compiler;
 
 $file = 't/complex-vals.bau';
 if (count($argv) > 1) {
@@ -12,4 +12,6 @@ $tree = $compiler->compile($file); // FIXME: tree won't be compiler's output eve
 $exporter = new TreeExporter();
 $exporter->exportTree($tree);
 print "DONE\n";
+?>
+
 ?>
