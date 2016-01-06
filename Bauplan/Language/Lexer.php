@@ -18,25 +18,31 @@ abstract class Lexer {
 
   abstract function mapTerminals();
 
+  /*
+   * Top-down token lexer
+   */
   function tokenize($source) {
+    $sourcecode = $source;
     if (!is_array($source)) $source = array($source);
 
     $tokens = array();
-    foreach ($source as $number => $line) {
-      $offset = 0;
-      while ($offset < strlen($line)) {
-        $string = substr($line, $offset);
-        $result = $this->match($string, $number+1);
-        if ($result === false) {
-          throw new SyntaxError(sprintf('Unexpected character "%s"', $string[$offset]), $offset);
-        }
+    foreach ($this->mapTerminals() as $pattern => $tokenName) {
+      foreach ($source as $number => $line) {
+        if (preg_match_all($pattern, $line, $matches, PREG_PATTERN_ORDER|PREG_OFFSET_CAPTURE)) {
+          foreach ($matches[1] as $match) { // index 1 contains the actual match
+            list($value, $index) = $match;
 
-        array_push($tokens, $result);
-        $offset += strlen($result->getValue());
+            array_push($tokens, new LexerToken(new Token($value, $tokenName, $line), $index));
+          }
+          $source = preg_replace($pattern, '!', $source); // FIXME - explode on this later
+          var_dump($source);
+        }
       }
     }
 
-    return $this->postLex(new TokenStream($this->finalize($tokens)));
+    $res = $this->postLex(new TokenStream($this->remapSource($this->finalize($tokens), $sourcecode)));
+    var_dump($res);
+    return $res;
   }
 
   /*
@@ -47,7 +53,48 @@ abstract class Lexer {
   }
 
   private function finalize($tokens) {
+    $tokens = array_map(function($el) { return $el->getToken(); }, $tokens);
+    // usort($tokens, function($a, $b) {
+    //   echo "Comparing position " . $a->getPosition() . " vs " . $b->getPosition() . " for tokens " . $a->getToken() . " and " . $b->getToken() . "\n";
+    //   return $a->getPosition() > $b->getPosition();
+    // });
+    // $tokens = array_map(function($el) { return $el->getToken(); }, $tokens);
+    return $this->handleLiterals($tokens);
     return $this->removeSkippedTokens($this->handleLiterals($tokens));
+  }
+
+  private function remapSource($tokens, $source) {
+    $index = 0;
+    $literals = array();
+    foreach ($tokens as $token) {
+      if ($token->getType() == Lexer::LITERAL) {
+        echo "ON TOKEN '" . $token->getValue() . "'\n";
+        $literal = "";
+        $prevStrpos = -1;
+        foreach (str_split($token->getValue()) as $char) {
+          $prev = $literal;
+          $literal .= $char;
+
+          $strpos = strpos($source, $literal, $index);
+          if ($prevStrpos == -1) $prevStrpos = $strpos;
+          if ($strpos === false || $strpos != $prevStrpos) {
+            $index += strlen($prev);
+
+            $literal = $char;
+            $prevStrpos = -1;
+            if ($prev != '!') array_push($literals, new Token($prev, Lexer::LITERAL, $token->getLine()));
+          }
+          else {
+            echo "Strpos: $strpos, prevStrpos: $prevStrpos ($literal)\n";
+            $prevStrpos = $strpos;
+          }
+        }
+        if ($literal && $literal != '!') {
+          array_push($literals, new Token($literal, Lexer::LITERAL, $token->getLine()));
+        }
+      }
+    }
+    return $literals;
   }
 
   /*
@@ -106,15 +153,28 @@ abstract class Lexer {
 
     return $realTokens;
   }
+}
 
-  private function match($string, $lineNumber) {
-    foreach ($this->mapTerminals() as $pattern => $tokenName) {
-      if (preg_match($pattern, $string, $matches)) {
-        return new Token($matches[1], $tokenName, $lineNumber);
-      }
-    }
+/*
+ * In order to simplify generating tokens, tokens are specified from most to
+ * least specific and are lexed in the order they're defined before being pieced
+ * back together in order
+ */
+class LexerToken {
+  private $token;
+  private $position;
 
-    return false;
+  function __construct($token, $position) {
+    $this->token = $token;
+    $this->position = $position;
+  }
+
+  function getToken() {
+    return $this->token;
+  }
+
+  function getPosition() {
+    return $this->position;
   }
 }
 ?>
