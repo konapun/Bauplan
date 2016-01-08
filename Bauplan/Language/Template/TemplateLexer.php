@@ -10,11 +10,15 @@ use Bauplan\Language\Template\TemplateToken as Token;
  * Entry point for Bauplan parsing - Since Bauplan tries to be somewhat
  * unobtrusive for templating, it tries to reserve as few tokens as possible
  * while retaining expressiveness. Most of this expressiveness is needed within
- * directives, so in ordder to not have to reserve additional tokens, directives
+ * directives, so in order to not have to reserve additional tokens, directives
  * go through their own lexing phase. Tokens listed here are not the full set,
  * but represent the set of all tokens which must be escaped. However, it's
  * advisable to use literals wherever possible to avoid special case munging of
  * tokens into literals.
+ *
+ * Sequences of T_IDENTIFIERs are transformed into T_LITERAL_STRINGs during
+ * the parsing phase.
+
  *
  * TODO: Handle escape character
  */
@@ -47,8 +51,6 @@ class TemplateLexer extends Lexer {
   /*
    * Replace all directive strings with tokens produced by running each
    * T_DIRECTIVE_STRING through the directive lexer
-   *
-   * TODO: Eventually, combine sequences of T_IDENTIFIER tokens into T_LITERAL_STRING tokens so explicit literals aren't needed as often
    */
   function postLex($tokens) {
     $lexer = $this->directiveLexer;
