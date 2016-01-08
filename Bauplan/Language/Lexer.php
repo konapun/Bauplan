@@ -9,15 +9,23 @@ abstract class Lexer {
 
   /* Types that have special meanings within the lexer which may be used by different concrete lexers */
   const SKIP = 'SKIP';
-  const LITERAL = 'T_LITERAL';
   const SKIP_BLOCK_START = 'SKIP_BLOCK_START';
   const SKIP_BLOCK_END = 'SKIP_BLOCK_END';
   const T_ESCAPE = 'T_ESCAPE';
 
+  /*
+   * Return a map of regexes to token name. Regexes are standard PHP regexes
+   * aside from being between slashes (/) since these slashes are added in as
+   * the source is tokenized.
+   */
   abstract protected function tokens();
 
-  protected function postLex($tokenStream) {
-    return $tokenStream;
+  /*
+   * Any further operations that should be performed on the tokens after they've
+   * been lexed.
+   */
+  protected function postLex($tokens) {
+    return $tokens;
   }
 
   final function tokenize($source) {
@@ -69,12 +77,9 @@ abstract class Lexer {
   }
 
   private function match($string, $lineNumber) {
-    //echo "String: \"$string\"\n";
     foreach ($this->tokens() as $pattern => $tokenName) {
       $pattern = "/^$pattern/";
       if (preg_match($pattern, $string, $matches)) {
-        //echo "Pushing token " . $matches[1] . " of type $tokenName\n";
-        //echo "----------------------------------------------------\n";
         return array(new Token($matches[1], $tokenName, $lineNumber), $matches[0]);
       }
     }

@@ -14,6 +14,8 @@ include_once($langBase . 'Compiler.php');
 include_once($langBase . 'Lexer.php');
 include_once($langBase . 'Parser.php');
 include_once($langBase . 'Token.php');
+include_once($langBase . 'Directive' . DIRECTORY_SEPARATOR . 'DirectiveLexer.php');
+include_once($langBase . 'Directive' . DIRECTORY_SEPARATOR . 'DirectiveToken.php');
 include_once($langBase . 'Template' . DIRECTORY_SEPARATOR . 'TemplateLexer.php');
 include_once($langBase . 'Template' . DIRECTORY_SEPARATOR . 'TemplateToken.php');
 
