@@ -1,6 +1,7 @@
 <?php
 namespace Bauplan\Language\Template;
 
+use Bauplan\Language\Token as BauplanToken;
 use Bauplan\Language\Lexer as Lexer;
 use Bauplan\Language\Directive\DirectiveLexer as DirectiveLexer;
 use Bauplan\Language\Template\TemplateToken as Token;
@@ -43,18 +44,25 @@ class TemplateLexer extends Lexer {
     );
   }
 
-  // TODO - Eventually, combine sequences of T_IDENTIFIER tokens into T_LITERAL_STRING tokens
+  /*
+   * Replace all directive strings with tokens produced by running each
+   * T_DIRECTIVE_STRING through the directive lexer
+   *
+   * TODO: Eventually, combine sequences of T_IDENTIFIER tokens into T_LITERAL_STRING tokens so explicit literals aren't needed as often
+   */
   function postLex($tokens) {
     $lexer = $this->directiveLexer;
 
     $postTokens = array();
     foreach ($tokens as $token) {
-      if ($token->getType() == Token::T_DIRECTIVE_STRING) {
+      if ($token->getType() == Token::T_DIRECTIVE_STRING) { // surround directive contents in T_DIRECTIVE_START and T_DIRECTIVE_END tokens to simplify some parsing rules
+        array_push($postTokens, new BauplanToken('{', Token::T_DIRECTIVE_START));
         $source = $token->getValue();
 
         foreach ($lexer->tokenize($source) as $directiveToken) {
           array_push($postTokens, $directiveToken);
         }
+        array_push($postTokens, new BauplanToken('}', Token::T_DIRECTIVE_END));
       }
       else {
         array_push($postTokens, $token);

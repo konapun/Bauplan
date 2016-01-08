@@ -1,0 +1,19 @@
+bauplan := template
+template := T_TEMPLATE complex_typedef
+section := T_SECTION complex_typedef
+code := T_CODE complex_typedef
+variable := T_VARIABLE identifier directive_block? T_TYPE_CLOSE
+complex_typedef := T_TYPE_OPEN identifier directive_block? body? T_TYPE_CLOSE
+directive_block := T_TEMPLATE_START directive directives T_TEMPLATE_END
+directive := T_KEY directive_value_list? directives?
+directives := T_PIPE directive
+directive_value_list := directive_value directive_values?
+directive_value := boolean | T_NUMBER | T_STRING
+directive_value_list := T_COMMA directive_value_list
+identifier := T_IDENTIFIER | T_LAMBDA
+boolean := T_TRUE | T_FALSE
+body :=  template body?
+       | section body?
+       | code body?
+       | variable body?
+       | T_LITERAL_STRING body?

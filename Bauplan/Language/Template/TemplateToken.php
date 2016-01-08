@@ -16,5 +16,7 @@ class TemplateToken extends Token {
   const T_STRING = 'T_STRING';
   const T_DIRECTIVE_STRING = 'T_DIRECTIVE_STRING';
   const T_IDENTIFIER = 'T_IDENTIFIER';
+  const T_DIRECTIVE_START = 'T_DIRECTIVE_START';
+  const T_DIRECTIVE_END = 'T_DIRECTIVE_END';
 }
 ?>

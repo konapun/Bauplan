@@ -3,7 +3,7 @@
   Demonstrating another line.
 ;;)
 *(template {key: "value" | key2: -0.12, true, false} ;; this is an inline comment.
-  @(lambda
+  @(lambda {display: false}
   <<<
     A literal can contain anything *(*&(#)) lambda etc
   >>>
