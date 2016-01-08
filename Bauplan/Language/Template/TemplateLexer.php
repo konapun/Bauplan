@@ -17,32 +17,27 @@ class TemplateLexer extends Lexer {
 
   function __construct() {}
 
-  function mapTerminals() {
+  protected function tokens() {
     return array(
-      '/(;;\()\s*/'              => Lexer::BLOCK_IGNORE_START,
-      '/(;;\))\s*/'              => Lexer::BLOCK_IGNORE_END,
-      '/(;;.*)\s*/'              => Lexer::SKIP, // ;; inline comment
-      '/(\\\)\s*/'               => Lexer::T_ESCAPE,
-      //"/^'([^\"]\\S*|\".+?\")\\s*/" => 'T_QUOTED_STRING',
-      '/(<<<)\s*/'               => Lexer::LITERAL_START, // <<<
-      '/(>>>)\s*/'               => Lexer::LITERAL_END, // >>>
-      '/(\$\$)\s*/'              => Token::T_PREPROC_DECL, // $$
-      '/(\*)\s*/'                => Token::T_TEMPLATE, // *
-      '/(@)\s*/'                 => Token::T_SECTION, // @
-      '/(\$)\s*/'                => Token::T_VARIABLE, // $
-      '/(&)\s*/'                 => Token::T_CODE, // &
-      '/(#)\s*/'                 => Token::T_INSTRUCTION, // #
-      '/(\()\s*/'                => Token::T_TYPE_OPEN, // (
-      '/(\))\s*/'                => Token::T_TYPE_CLOSE, // )
-      '/({)\s*/'                 => Token::T_DIRBLOCK_OPEN, // {
-      '/(})\s*/'                 => Token::T_DIRBLOCK_CLOSE, // }
-      '/(lambda)\s*/'            => Token::T_LAMBDA, // lambda
-      '/(.+)\s*/'                => Lexer::LITERAL, // anything else
-      '/(\s+)/'                  => Lexer::SKIP, // spaces
+      ';;\(([^;;\)]*)'        => Lexer::SKIP, // ;;( block comment ;;)
+      ';;.*'                  => Lexer::SKIP, // ;; inline comment
+      '<<<([^\>\>\>]*)\>\>\>' => Token::T_LITERAL_STRING, // <<< literal string >>>
+      '{([^}]*)}'             => Token::T_DIRECTIVE_STRING, // { directive string to be parsed later }
+      '(lambda)'              => Token::T_LAMBDA, // lambda
+      '(\*)'                  => Token::T_TEMPLATE, // *
+      '(@)'                   => Token::T_SECTION, // @
+      '(&)'                   => Token::T_CODE, // &
+      '(\$)'                  => Token::T_VARIABLE, // $
+      '(\#)'                  => Token::T_INSTRUCTION, // #
+      '(\()'                  => Token::T_TYPE_OPEN, // (
+      '(\))'                  => Token::T_TYPE_CLOSE, // )
+      '(\w+)'                 => Token::T_IDENTIFIER,
+      '(\s+)'                 => Lexer::SKIP // whitespace
     );
   }
 
   function postLex($tokenStream) {
+    return $tokenStream;
     return $this->combineStrings($tokenStream);
   }
 

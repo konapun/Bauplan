@@ -1,5 +1,7 @@
 *(template {directive string}
-  @(section
-    Anything starting with s will break the section token above
+  @(lambda
+  <<<
+    A literal can contain anything *(*&(#)) lambda etc
+  >>>
   )
 )
