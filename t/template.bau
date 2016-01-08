@@ -6,6 +6,7 @@
   @(lambda {display: false}
   <<<
     A literal can contain anything *(*&(#)) lambda etc
+    and span multiple lines
   >>>
   )
 )

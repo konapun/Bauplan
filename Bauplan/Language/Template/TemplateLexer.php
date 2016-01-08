@@ -31,8 +31,8 @@ class TemplateLexer extends Lexer {
 
   protected function tokens() {
     return array(
-      ';;\(([^;;\)]*)'        => Lexer::SKIP, // ;;( block comment ;;)
-      ';;(.*)'                => Lexer::SKIP, // ;; inline comment
+      ';;\(([^;;\)]*);;\)'    => Lexer::SKIP, // ;;( block comment ;;)
+      //';;(.*)'                => Lexer::SKIP, // ;; inline comment
       '<<<([^\>\>\>]*)\>\>\>' => Token::T_LITERAL_STRING, // <<< literal string >>>
       '{([^}]*)}'             => Token::T_DIRECTIVE_STRING, // { directive string to be parsed later }
       '(lambda)'              => Token::T_LAMBDA, // lambda
@@ -44,7 +44,8 @@ class TemplateLexer extends Lexer {
       '(\()'                  => Token::T_TYPE_OPEN, // (
       '(\))'                  => Token::T_TYPE_CLOSE, // )
       '(\w+)'                 => Token::T_IDENTIFIER,
-      '(\s+)'                 => Lexer::SKIP // whitespace
+      '(\s+)'                 => Lexer::SKIP, // whitespace
+      '(.+)'                  => Token::T_ANY // anything else that didn't match. We do this in order to allow continuing no matter what since we'll reclassify it into a literal later
     );
   }
 

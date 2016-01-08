@@ -78,8 +78,10 @@ abstract class Lexer {
 
   private function match($string, $lineNumber) {
     foreach ($this->tokens() as $pattern => $tokenName) {
-      $pattern = "/^$pattern/";
+      $pattern = "/^$pattern m/";
+      echo "Trying '$pattern' (for $tokenName) on $string\n";
       if (preg_match($pattern, $string, $matches)) {
+        echo "Matched '$pattern' (for $tokenName) as '" . $matches[1] . "' on $string\n--------------------------------\n";
         return array(new Token($matches[1], $tokenName, $lineNumber), $matches[0]);
       }
     }
