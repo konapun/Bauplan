@@ -5,6 +5,9 @@ $langBase = $base . 'Language' . DIRECTORY_SEPARATOR;
 $exceptionBase = $base . 'Exception' . DIRECTORY_SEPARATOR;
 $roleBase = $base . 'Role' . DIRECTORY_SEPARATOR;
 $typeBase = $base . 'Type' . DIRECTORY_SEPARATOR;
+$perfBase = $base . 'Perf' . DIRECTORY_SEPARATOR;
+
+include_once($perfBase . 'Timer.php');
 
 //include_once($base . 'Type.php');
 include_once($base . 'DirectiveLoader.php');
@@ -25,6 +28,9 @@ include_once($exceptionBase . 'SyntaxError.php');
 include_once($roleBase . 'Cloneable.php');
 include_once($roleBase . 'Renderable.php');
 // TODO
+
+echo $perfBase . "Timer.php\n";
+
 
 // TODO: Instantiate runtime, return API tree
 

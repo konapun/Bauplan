@@ -1,0 +1,42 @@
+;;( Block comment ;;)
+*(template {
+    something: "something" |
+    something: "something" |
+    something: "something"
+  }
+
+  @(lambda {display: false} ;; inline comment
+    $(var1 {value: "test"})
+    $(var2 {required | value: "test"})
+  )
+
+  &(code {language: "php"}
+  ;;(
+  <<<
+    ;;$this->something();
+    echo "PHP CODE HERE\n";
+  >>>
+  ;;)
+  )
+
+;;(
+<<<
+  <html>
+    <head>
+      <title>$(title {default: "BAUPLAN1 COMPARISON"})</title>
+    </head>
+    <body>
+      <header class="header">
+        <nav></nav>
+      </header>
+    </body>
+    <div class="content">
+      *(content)
+    </div>
+    <footer class="footer">
+      <div></div>
+    </footer>
+  </html>
+>>>
+;;)
+)
