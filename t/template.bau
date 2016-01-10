@@ -1,6 +1,6 @@
 ;;(
   This is a block comment. It can span multiple lines and gets removed by the lexer.
-  Demonstrating another line.
+  Demonstrating another linez.
 ;;)
 *(template {key: "value" | key2: -0.12, true, false} ;; this is an inline comment.
   @(lambda {display: false}

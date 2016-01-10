@@ -1,4 +1,3 @@
-;;( Block comment ;;)
 *(template {
     something: "something" |
     something: "something" |
@@ -10,16 +9,17 @@
     $(var2 {required | value: "test"})
   )
 
-  &(code {language: "php"}
   ;;(
+    Define some code to run
+  ;;)
+  &(code {language: "php"}
   <<<
     ;;$this->something();
     echo "PHP CODE HERE\n";
   >>>
-  ;;)
+;;)
   )
 
-;;(
 <<<
   <html>
     <head>
@@ -38,5 +38,4 @@
     </footer>
   </html>
 >>>
-;;)
 )

@@ -15,15 +15,15 @@ class DirectiveLexer extends Lexer {
 
   protected function tokens() {
     return array(
-      '(\|)'                   => Token::T_PIPE, // |
-      '(,)'                    => Token::T_COMMA, // ,
-      '(:)'                    => Token::T_COLON, // :
-      '"([^"]*)"'              => Token::T_STRING, // "directive string"
-      '([-+]?[0-9]*\.?[0-9]+)' => Token::T_NUMBER, // -1.234
-      '(true)'                 => Token::T_TRUE, // true
-      '(false)'                => Token::T_FALSE, // false
-      '(\w+)'                  => Token::T_KEY,
-      '(\s+)'                  => Lexer::SKIP // whitespace
+      '/^(\|)/'                   => Token::T_PIPE, // |
+      '/^(,)/'                    => Token::T_COMMA, // ,
+      '/^(:)/'                    => Token::T_COLON, // :
+      '/^"([^"]*)"/'              => Token::T_STRING, // "directive string"
+      '/^([-+]?[0-9]*\.?[0-9]+)/' => Token::T_NUMBER, // -1.234
+      '/^(true)/'                 => Token::T_TRUE, // true
+      '/^(false)/'                => Token::T_FALSE, // false
+      '/^(\w+)/'                  => Token::T_KEY,
+      '/^(\s+)/'                  => Lexer::SKIP // whitespace
     );
   }
 }

@@ -14,9 +14,9 @@ abstract class Lexer {
   const T_ESCAPE = 'T_ESCAPE';
 
   /*
-   * Return a map of regexes to token name. Regexes are standard PHP regexes
-   * aside from being between slashes (/) since these slashes are added in as
-   * the source is tokenized.
+   * Return a map of regexes to token name. Regexes are standard PHP regexes but
+   * should be written with the expectation that each regex should match
+   * starting at the beginning of the line since source will be trimmed.
    */
   abstract protected function tokens();
 
@@ -78,15 +78,25 @@ abstract class Lexer {
 
   private function match($string, $lineNumber) {
     foreach ($this->tokens() as $pattern => $tokenName) {
-      $pattern = "/^$pattern m/";
-      echo "Trying '$pattern' (for $tokenName) on $string\n";
+      $pattern = $this->mungeRegex($pattern);
       if (preg_match($pattern, $string, $matches)) {
-        echo "Matched '$pattern' (for $tokenName) as '" . $matches[1] . "' on $string\n--------------------------------\n";
+        //echo "!!!Matched '$pattern' (for $tokenName) as '" . $matches[1] . "' on $string\n--------------------------------\n";
         return array(new Token($matches[1], $tokenName, $lineNumber), $matches[0]);
       }
     }
 
     return false;
+  }
+
+  /*
+   * TODO: Since match wants to only match the first regex, we need to insert ^
+   * into the beginning of the regex. However, some regexes want this in places
+   * other than the start of the string so for now just do it in the concrete
+   * lexer regexes
+   */
+  private function mungeRegex($regex) {
+    return $regex;
+    return '/^' . substr($regex, 1);
   }
 }
 ?>
