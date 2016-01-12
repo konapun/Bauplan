@@ -1,0 +1,6 @@
+;;(
+  Testing beginning phases of parser development
+;;)
+*(test) ;; good
+*(test {}) ;; good
+*({}) ;; bad

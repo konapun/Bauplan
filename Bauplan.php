@@ -12,8 +12,8 @@ include_once($perfBase . 'Timer.php');
 //include_once($base . 'Type.php');
 include_once($base . 'DirectiveLoader.php');
 
-include_once($langBase . 'TokenStream.php');
-include_once($langBase . 'Compiler.php');
+include_once($langBase . 'StateMachine' . DIRECTORY_SEPARATOR . 'Node.php');
+include_once($langBase . 'StateMachine' . DIRECTORY_SEPARATOR . 'PushdownMachine.php');
 include_once($langBase . 'Lexer.php');
 include_once($langBase . 'Parser.php');
 include_once($langBase . 'Token.php');
@@ -21,16 +21,11 @@ include_once($langBase . 'Directive' . DIRECTORY_SEPARATOR . 'DirectiveLexer.php
 include_once($langBase . 'Directive' . DIRECTORY_SEPARATOR . 'DirectiveToken.php');
 include_once($langBase . 'Template' . DIRECTORY_SEPARATOR . 'TemplateLexer.php');
 include_once($langBase . 'Template' . DIRECTORY_SEPARATOR . 'TemplateToken.php');
+include_once($langBase . 'Template' . DIRECTORY_SEPARATOR . 'TemplateParser.php');
 
 include_once($exceptionBase . 'IOException.php');
 include_once($exceptionBase . 'SyntaxError.php');
-
-include_once($roleBase . 'Cloneable.php');
-include_once($roleBase . 'Renderable.php');
-// TODO
-
-echo $perfBase . "Timer.php\n";
-
+include_once($exceptionBase . 'StateException.php');
 
 // TODO: Instantiate runtime, return API tree
 

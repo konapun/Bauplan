@@ -1,8 +1,9 @@
 <?php
 include_once('Bauplan.php');
 //use Bauplan\CLI;
-use Bauplan\Language\Template\TemplateLexer as Lexer;
 use Bauplan\Perf\Timer as Timer;
+use Bauplan\Language\Template\TemplateLexer as Lexer;
+use Bauplan\Language\Template\TemplateParser as Parser;
 //use Bauplan\Compiler\Compiler as Compiler;
 //use Bauplan\Compiler\SyntaxTreeExporter\ArrayExporter as TreeExporter;
 
@@ -25,24 +26,24 @@ $file = $argv[count($argv)-1]; // take input from command line
 
 $timer->createPoint('lexer');
 $lexer = new Lexer();
-$tokenStream = $lexer->tokenize(file_get_contents($file));
+$tokens = $lexer->tokenize(file_get_contents($file));
 $performance['lexer'] = $timer->getTimeSinceLastPoint();
-
-
-
-
-
 
 if ($showPerf) {
   showPerformance($performance);
   die();
 }
 
-print "START TOKEN LIST:\n";
-print "----------------\n";
-foreach ($tokenStream as $token) {
-  echo $token->getValue() . " (" . $token->getType() . ")\n";
+if (array_key_exists('l', $options)) {
+  echo "Tokens\n";
+  echo "------\n";
+  foreach ($tokens as $token) {
+    echo $token->getValue() . " (" . $token->getType() . ")\n";
+  }
 }
+
+$parser = new Parser();
+$parser->parse($tokens);
 
 function help() {
   return <<<EOS
