@@ -1,0 +1,18 @@
+;;(
+  Example:
+
+  *(template {
+      namespace: "one/two/three"
+    }
+
+    Bauplan version: $(bauplan/version) ;; one way
+    Bauplan version: $(lambda {bauplan/metadata: "version"})
+  )
+;;)
+*(lambda {namespace: "bauplan"}
+  &(get-bauplan-version { lang: "php" | env-assign: "runtime" [as] "ENINE" } ;; remember that [anything] functions as a comma
+    return $ENGINE->metadata('version');
+  )
+  $(version {global | const | value: get-bauplan-version}) ;; template grammar exists separately from directive grammar sothey need to be shared this way
+  $(version {global | const | bauplan/metadata: "version"})
+)

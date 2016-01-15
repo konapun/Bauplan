@@ -1,0 +1,14 @@
+;;(
+  Within a directive, syntactic commas (of the form "[anything except closing brace]") can be used to add additional meaning
+  to directive parameters
+;;)
+*(lambda {namespace: "test"}
+
+  $(variable {key: "one" [then] "two" [then] "three", "four" [finally] "five"})
+
+  #(if {greater-than: 2 [is greater than] 1} ;; arguments are now unambiguous
+    Two is greater than 1
+  )
+
+  #(add-numbers {args: 1, 2})
+)

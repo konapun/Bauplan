@@ -29,6 +29,7 @@ $lexer = new Lexer();
 $tokens = $lexer->tokenize(file_get_contents($file));
 $performance['lexer'] = $timer->getTimeSinceLastPoint();
 
+echo "HERE\n";
 if ($showPerf) {
   showPerformance($performance);
   die();

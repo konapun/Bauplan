@@ -39,8 +39,13 @@ class Node {
       return $this->transitions[$id];
     }
     else {
-      $this->transition('__error__'); // FIXME: define as const in network
+      echo "FIXME: BAD TRANSITION IN NODE\n";
+      //$this->transition(PushdownMachine::ERROR);
     }
+  }
+
+  function __toString() {
+    return $this->getID();
   }
 }
 ?>

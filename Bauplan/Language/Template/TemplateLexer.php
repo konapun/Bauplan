@@ -31,23 +31,23 @@ class TemplateLexer extends Lexer {
 
   protected function tokens() {
     return array(
-      '/^;;\((.*?)(?=;;\))/s'   => Lexer::SKIP, // ;;( block comment ;;)
-      '/^(;;\))/'               => Lexer::SKIP, // hack needed because the capture in the line above doesn't include the closing and will throw off the lexer offset
-      '/^;;(.*)/'               => Lexer::SKIP, // ;; inline comment
-      '/^<<<(.*?)(?=>>>)/s'     => Token::T_LITERAL_STRING, // <<< literal string >>>
-      '/^(>>>)/'                => Lexer::SKIP, // hack like comment close above
-      '/^{([^}]*)}/'            => Token::T_DIRECTIVE_STRING, // { directive string to be parsed later }
-      '/^(lambda)/'             => Token::T_LAMBDA, // lambda
-      '/^(\*)/'                 => Token::T_TEMPLATE, // *
-      '/^(@)/'                  => Token::T_SECTION, // @
-      '/^(&)/'                  => Token::T_CODE, // &
-      '/^(\$)/'                 => Token::T_VARIABLE, // $
-      '/^(\#)/'                 => Token::T_INSTRUCTION, // #
-      '/^(\()/'                 => Token::T_TYPE_OPEN, // (
-      '/^(\))/'                 => Token::T_TYPE_CLOSE, // )
-      '/^(\w+)/'                => Token::T_IDENTIFIER,
-      '/^(\s+)/'                => Lexer::SKIP, // whitespace
-      '/^(.+)/'                 => Token::T_ANY // anything else that didn't match. We do this in order to allow continuing no matter what since we'll reclassify it into a literal later
+      '/^;;\((.*?)(?=;;\))/s'          => Lexer::SKIP, // ;;( block comment ;;)
+      '/^(;;\))/'                      => Lexer::SKIP, // hack needed because the capture in the line above doesn't include the closing and will throw off the lexer offset
+      '/^;;(.*)/'                      => Lexer::SKIP, // ;; inline comment
+      '/^<<<(.*?)(?=>>>)/s'            => Token::T_LITERAL_STRING, // <<< literal string >>>
+      '/^(>>>)/'                       => Lexer::SKIP, // hack like comment close above
+      '/^{([^}]*)}/'                   => Token::T_DIRECTIVE_STRING, // { directive string to be parsed later }
+      '/^(lambda)/'                    => Token::T_LAMBDA, // lambda
+      '/^(\*)/'                        => Token::T_TEMPLATE, // *
+      '/^(@)/'                         => Token::T_SECTION, // @
+      '/^(&)/'                         => Token::T_CODE, // &
+      '/^(\$)/'                        => Token::T_VARIABLE, // $
+      '/^(\#)/'                        => Token::T_INSTRUCTION, // #
+      '/^(\()/'                        => Token::T_TYPE_OPEN, // (
+      '/^(\))/'                        => Token::T_TYPE_CLOSE, // )
+      '/^([a-z_\-][a-zA-Z_\-0-9]*)/'   => Token::T_IDENTIFIER,
+      '/^(\s+)/'                       => Lexer::SKIP, // whitespace
+      '/^(.+)/'                        => Token::T_ANY // anything else that didn't match. We do this in order to allow continuing no matter what since we'll reclassify it into a literal later
     );
   }
 

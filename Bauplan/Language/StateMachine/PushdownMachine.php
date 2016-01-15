@@ -52,6 +52,23 @@ class PushdownMachine {
   }
 
   /*
+   * TODO: Allow multiple matches?
+   */
+  function addStackMatch($open, $close) {
+    $stack = $this->stack;
+    $this->onTransitionTo($open, function() use (&$stack, $open) {
+      array_push($stack, $open);
+
+    });
+    $this->onTransitionTo($close, function() use (&$stack, $open) {
+      $symbol = array_pop($stack);
+      if ($symbol != $open) {
+        echo "FAIL!\n";
+      }
+    });
+  }
+
+  /*
    * Create transitions from one or more states to one or more states
    */
   function setTransition($from, $to) {
@@ -69,7 +86,8 @@ class PushdownMachine {
    * The `setTransition` method can take multiple states as $from and $to. This
    * simplifies it by only allowing a single transition per call
    */
-  private function setSingleTransition($from, $to, $stackManipulationFunction) {
+  private function setSingleTransition($from, $to, $stackManipulationFunction=null) {
+    if (is_null($stackManipulationFunction)) $stackManipulationFunction = function() {}; // NOP
     try {
       $from = $this->getState($from);
     }
@@ -91,21 +109,32 @@ class PushdownMachine {
    * transition is defined. Else, transition to the error state.
    */
   function transition($state) {
+    echo "Current state is " . $this->state . "\n";
+    echo "Transitioning to $state\n";
+    echo "------------------------\n";
     $source = $this->state;
     $dest = $state;
-    if (!$this->getState($state)) {
+    if (!$this->getState($state)) { // automatically transition to the error state if an unknown state is given
       $dest = self::ERROR;
     }
 
+    // FIXME: transition callbacks
+    foreach ($this->callbacks['__all__']['from'] as $callback) {
+      $callback($dest);
+    }
     if (array_key_exists($state, $this->callbacks)) {
-      foreach ($this->calbacks['all'] as $callback) {
-        $callback($dest);
-      }
       foreach ($this->callbacks[$state]['from'] as $callback) {
         $callback();
       }
     }
+
+    array_push($this->stack, $source);
+    $this->state = $this->state->transition($state); // make the actual transition
+
     if (array_key_exists($dest, $this->callbacks)) {
+      foreach ($this->callbacks['__all__']['to'] as $callback) {
+        $callback($dest); // FIXME
+      }
       foreach ($this->callbacks[$dest]['to'] as $callback) {
         $callback();
       }
@@ -116,13 +145,25 @@ class PushdownMachine {
    * Set callback to be run when
    */
   function onTransitionTo($id, $callback) {
-    $state = $this->getTransitionState($id);
-    array_push($state['to'], $callback($state));
+    $state = $this->getState($id);
+    if (!array_key_exists($state->getID(), $this->callbacks)) {
+      $this->callbacks[$state->getID()] = array(
+        'from' => array(),
+        'to'   => array()
+      );
+    }
+    array_push($this->callbacks[$state->getID()]['to'], $callback);
   }
 
   function onTransitionFrom($id, $callback) {
-    $state = $this->getTransitionState($id);
-    array_push($state['from'], $callback($state));
+    $state = $this->getState($id);
+    if (!array_key_exists($state->getID(), $this->callbacks)) {
+      $this->callbacks[$state->getID()] = array(
+        'from' => array(),
+        'to'   => array()
+      );
+    }
+    array_push($this->callbacks[$state->getID()]['from'], $callback);
   }
 
   /*
@@ -136,20 +177,5 @@ class PushdownMachine {
     else {
       throw new StateException("No such state '$id'");
     }
-  }
-
-  /*
-   * Return the transition state for a node or create it if it doesn't exist
-   */
-  private function getTransitionState($id) {
-    $state = $this->getState($id);
-    if (!array_key_exists($state, $this->callbacks)) {
-      $this->callbacks[$id] = array(
-        'to'   => array(),
-        'from' => array()
-      );
-    }
-
-    return $this->callbacks[$id];
   }
 }
