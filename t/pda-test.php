@@ -1,7 +1,7 @@
 <?php
 include_once('./Bauplan.php');
 
-use Bauplan\Language\StateMachine\PushdownMachine as PDA;
+use Bauplan\Language\StateMachine\PDA as PDA;
 use Bauplan\Language\Template\TemplateLexer as Lexer;
 use Bauplan\Language\Template\TemplateToken as Token;
 
@@ -9,12 +9,12 @@ use Bauplan\Language\Template\TemplateToken as Token;
 $pda = new PDA();
 
 /* Transitions */
-$pda->setTransition(PDA::START, PDA::ACCEPT);
-$pda->setTransition(PDA::START, array('(', '['));
-$pda->setTransition(array('(', '[', ']', ')'), array('(', '[', ']', ')'));
+$pda->addTransition(PDA::START, PDA::ACCEPT);
+$pda->addTransition(PDA::START, array('(', '['));
+$pda->addTransition(array('(', '[', ']', ')'), array('(', '[', ']', ')'));
 
-$pda->addStackMatch('(', ')'); // when ) is encountered, pop and expect from stack
-$pda->addStackMatch('[', ']');
+$pda->stackMatch(')', '('); // when ) is encountered, pop and expect from stack
+$pda->stackMatch(']', '[');
 
 $good = str_split('()([])');
 $bad = str_split('()|');

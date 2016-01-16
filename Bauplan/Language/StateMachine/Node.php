@@ -6,46 +6,32 @@ namespace Bauplan\Language\StateMachine;
  * the state network are handled by the state machine using node IDs, not nodes
  * themselves.
  */
-class Node {
-  private $id;
-  private $transitions;
-  private $network;
+ class Node {
+   private $id;
+   private $transitions;
 
-  /*
-   * Build a new state machine node with the given ID. The network is the full
-   * list of nodes in the machine.
-   */
-  function __construct($id, &$network) {
-    $this->id = $id;
-    $this->transitions = array();
+   function __construct($id) {
+     $this->id = $id;
+     $this->transitions = array();
+   }
 
-    $network[$id] = $this;
-    $this->network = $network;
-  }
+   function getID() {
+     return $this->id;
+   }
 
-  function getID() {
-    return $this->id;
-  }
+   function addTransition($node) {
+     $this->transitions[$node->getID()] = true;
+   }
 
-  function setTransition($node) {
-    $this->transitions[$node->getID()] = $node;
-  }
+   function transition($node) {
+     if (array_key_exists($node->getID(), $this->transitions)) {
+       return $node;
+     }
+     return null;
+   }
 
-  /*
-   * Attempt to make a transition if it exists
-   */
-  function transition($id) {
-    if (array_key_exists($id, $this->transitions)) {
-      return $this->transitions[$id];
-    }
-    else {
-      echo "FIXME: BAD TRANSITION IN NODE\n";
-      //$this->transition(PushdownMachine::ERROR);
-    }
-  }
-
-  function __toString() {
-    return $this->getID();
-  }
-}
+   function __toString() {
+     return $this->id;
+   }
+ }
 ?>

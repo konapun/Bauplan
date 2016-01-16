@@ -18,7 +18,7 @@ use Bauplan\Exception\StateException as StateException;
 class PushdownMachine {
 
   const START = '__start__';
-  const ERROR = '__error__';
+  const FAIL = '__fail__';
   const ACCEPT = '__accept__';
 
   private $state;
