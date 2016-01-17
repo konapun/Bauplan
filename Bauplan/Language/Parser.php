@@ -1,7 +1,8 @@
 <?php
 namespace Bauplan\Language;
 
-use Bauplan\Language\StateMachine\PushdownMachine as PushdownMachine;
+use Bauplan\Language\StateMachine\PDA as PDA;
+use Bauplan\Exception\ParseException as ParseException;
 
 abstract class Parser {
 
@@ -9,17 +10,18 @@ abstract class Parser {
    * The rules method takes the start node of a state machine and sets up all
    * other nodes and transitions.
    */
-  abstract protected function rules($stateMachine);
+  abstract protected function rules($pda);
 
   final function parse($tokens) {
-    $pushdownMachine = new PushdownMachine();
-    $this->rules($pushdownMachine);
+    $pda = new PDA();
+    $pda->onTransition(PDA::FAIL, function() {
+      throw new ParseException();
+    });
+    $this->rules($pda); // call to abstract function from concrete implementor
 
-    $state = PushdownMachine::START;
+    $pda->reset();
     foreach ($tokens as $token) {
-      echo "Trying to transition from $state to " . $token->getType() . "\n";
-      $pushdownMachine->transition($state, $token->getType());
-      $state = $token->getType();
+      $pda->transition($token->getType());
     }
   }
 }

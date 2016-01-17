@@ -26,7 +26,7 @@ include_once($langBase . 'Template' . DIRECTORY_SEPARATOR . 'TemplateParser.php'
 
 include_once($exceptionBase . 'IOException.php');
 include_once($exceptionBase . 'SyntaxError.php');
-include_once($exceptionBase . 'StateException.php');
+include_once($exceptionBase . 'ParseException.php');
 
 // TODO: Instantiate runtime, return API tree
 

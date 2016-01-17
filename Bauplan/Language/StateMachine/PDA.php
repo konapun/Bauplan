@@ -96,6 +96,10 @@ class PDA {
     });
   }
 
+  function reset() {
+    $this->state = $this->getOrCreateNode(self::START);
+  }
+
   /*
    * The transition function attempts to make a transition from the current node
    * to the node specified by $id. If the transition doesn't exist for any
@@ -106,14 +110,10 @@ class PDA {
    */
   function transition($id) {
     $from = $this->state->getID();
-    if (array_key_exists($id, $this->nodes)) {
-      $to = $this->nodes[$id];
-      if (!is_null($this->nodes[$this->state->getID()]->transition($to))) {
-        $this->state = $this->nodes[$id];
-      }
+    if (array_key_exists($id, $this->nodes) && !is_null($this->nodes[$this->state->getID()]->transition($this->nodes[$id]))) {
+      $this->state = $this->nodes[$id];
     }
     else {
-      echo "FAIL\n";
       $this->state = $this->nodes[self::FAIL];
     }
 

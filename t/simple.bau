@@ -1,0 +1,11 @@
+;;(
+  Simplest case to test the parser
+;;)
+*(template {key: "val" | key2: "val1", 1.0, true}
+
+  @(lambda {key}
+  <<<
+    Something something
+  >>>
+  )
+)
