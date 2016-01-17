@@ -43,6 +43,10 @@ class PDA {
     $accept = $this->getOrCreateNode(self::ACCEPT);
     $fail = $this->getOrCreateNode(self::FAIL);
 
+    // Initial transitions
+    $this->addTransition(self::FAIL, self::FAIL);
+    $this->addTransition(self::ACCEPT, self::ACCEPT);
+    
     $this->state = $start;
   }
 

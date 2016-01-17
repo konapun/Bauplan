@@ -7,5 +7,9 @@
   <<<
     Something something
   >>>
+    @(nested {key1: true | key2}
+      Here
+    )
   )
+
 )

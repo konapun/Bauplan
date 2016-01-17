@@ -23,6 +23,7 @@ abstract class Parser {
     foreach ($tokens as $token) {
       $pda->transition($token->getType());
     }
+    $pda->transition(PDA::ACCEPT); // must end in accept state in order to be a valid parse
   }
 }
 ?>
