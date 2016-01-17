@@ -16,9 +16,19 @@ $pda->addTransition(array('(', '[', ']', ')'), array('(', '[', ']', ')'));
 $pda->stackMatch(')', '('); // when ) is encountered, pop and expect from stack
 $pda->stackMatch(']', '[');
 
-$good = str_split('()([])');
-$bad = str_split('()|');
-foreach ($bad as $token) {
+$pda->onTransition(function($from, $to) {
+  echo "Transitioning from $from to $to!\n";
+});
+$pda->onTransition(PDA::FAIL, function() {
+  echo "FAILED!\n";
+});
+
+$good = '()([])';
+$bad = '())))|';
+
+$input = $good;
+foreach (str_split($input) as $token) {
   $pda->transition($token);
+  echo "After transition, state is " . $pda->getState() . "\n";
 }
  ?>

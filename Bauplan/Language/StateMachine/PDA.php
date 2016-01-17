@@ -32,18 +32,22 @@ class PDA {
   private $events;
 
   function __construct() {
-    $start = new Node(self::START);
-    $accept = new Node(self::ACCEPT);
-    $fail = new Node(self::FAIL);
+    $this->nodes = array();
+    $this->stack = array();
+    $this->events = array(
+      '__all__' => array()
+    );
+
+    // Initial nodes
+    $start = $this->getOrCreateNode(self::START);
+    $accept = $this->getOrCreateNode(self::ACCEPT);
+    $fail = $this->getOrCreateNode(self::FAIL);
 
     $this->state = $start;
-    $this->nodes = array(
-      self::START  => $start,
-      self::ACCEPT => $accept,
-      self::FAIL   => $fail
-    );
-    $this->stack = array();
-    $this->events = array();
+  }
+
+  function getState() {
+    return $this->state->getID();
   }
 
   function addTransition($id1, $id2) {
@@ -59,9 +63,14 @@ class PDA {
 
   /*
    * Set a function to run when triggered by a transition to the node with id
-   * $id
+   * $id. If no ID is given, set the callback to be invoked every transition
    */
-  function onTransition($id, $fn) {
+  function onTransition($id, $fn=null) {
+    if (is_null($fn)) {
+      $fn = $id;
+      $id = '__all__';
+    }
+
     $node = $this->getOrCreateNode($id);
     array_push($this->events[$id], $fn);
   }
@@ -73,15 +82,17 @@ class PDA {
     $node1 = $this->getOrCreateNode($id1);
     $node2 = $this->getOrCreateNode($id2);
 
+    $that = $this;
     $stack = $this->stack;
-    $this->onTransition($id1, function() use ($id2, &$stack) {
+    $this->onTransition($id1, function() use ($that, $id2, &$stack) {
       $symbol = array_pop($stack);
       if ($symbol != $id2) {
-        echo "UNBALANCED!\n"; // FIXME
+        $that->addTransition($that->getState(), self::FAIL);
+        $that->transition(self::FAIL);
       }
     });
-    $this->onTransition($id2, function() use (&$stack) {
-      array_push($id2, $stack);
+    $this->onTransition($id2, function() use ($id2, &$stack) {
+      array_push($stack, $id2);
     });
   }
 
@@ -94,12 +105,23 @@ class PDA {
    * Use transition events to catch error state.
    */
   function transition($id) {
-    if (array_key_exists($id, $this->nodes) && !is_null($this->nodes[$this->state->getID()]->transition($id))) {
-      $this->state = $this->nodes[$id];
+    $from = $this->state->getID();
+    if (array_key_exists($id, $this->nodes)) {
+      $to = $this->nodes[$id];
+      if (!is_null($this->nodes[$this->state->getID()]->transition($to))) {
+        $this->state = $this->nodes[$id];
+      }
+    }
+    else {
+      echo "FAIL\n";
+      $this->state = $this->nodes[self::FAIL];
     }
 
-    $this->state = $this->nodes[self::FAIL];
-    return $this->state->getID();
+    $to = $this->state->getID();
+    foreach (array_merge($this->events[$to], $this->events['__all__']) as $event) {
+      $event($from, $to);
+    }
+    return $to;
   }
 
   private function addSingleTransition($id1, $id2) {
