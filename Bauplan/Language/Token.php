@@ -1,7 +1,9 @@
 <?php
 namespace Bauplan\Language;
 
-class Token {
+use Bauplan\Language\StateMachine\NodeAdapter as NodeAdapter;
+
+class Token implements NodeAdapter {
   private $type;
   private $value;
   private $line;
@@ -12,6 +14,10 @@ class Token {
     $this->line = $line;
   }
 
+  function getID() {
+    return $this->getType();
+  }
+  
   function getType() {
     return $this->type;
   }

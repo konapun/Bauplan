@@ -13,6 +13,7 @@ include_once($perfBase . 'Timer.php');
 include_once($base . 'DirectiveLoader.php');
 
 include_once($langBase . 'StateMachine' . DIRECTORY_SEPARATOR . 'Node.php');
+include_once($langBase . 'StateMachine' . DIRECTORY_SEPARATOR . 'NodeAdapter.php');
 include_once($langBase . 'StateMachine' . DIRECTORY_SEPARATOR . 'PDA.php');
 
 include_once($langBase . 'AST' . DIRECTORY_SEPARATOR . 'Node.php');

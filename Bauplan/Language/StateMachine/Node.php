@@ -6,7 +6,7 @@ namespace Bauplan\Language\StateMachine;
  * the state network are handled by the state machine using node IDs, not nodes
  * themselves.
  */
- class Node {
+ class Node implements NodeAdapter {
    private $id;
    private $transitions;
 

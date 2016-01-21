@@ -46,7 +46,7 @@ class PDA {
     // Initial transitions
     $this->addTransition(self::FAIL, self::FAIL);
     $this->addTransition(self::ACCEPT, self::ACCEPT);
-    
+
     $this->state = $start;
   }
 
@@ -66,17 +66,27 @@ class PDA {
   }
 
   /*
-   * Set a function to run when triggered by a transition to the node with id
-   * $id. If no ID is given, set the callback to be invoked every transition
+   * Set a function to run when triggered by a transition to the node(s)
+   * specified by $id, which may be an array. If no IDs are given, set the
+   * callback to be invoked every transition.
    */
   function onTransition($id, $fn=null) {
     if (is_null($fn)) {
       $fn = $id;
       $id = '__all__';
     }
+    else if (!is_array($id)) {
+      $id = array($id);
+    }
 
-    $node = $this->getOrCreateNode($id);
-    array_push($this->events[$id], $fn);
+    if (is_array($id)) {
+      foreach ($id as $nodeID) {
+        $this->onSingleTransition($nodeID, $fn);
+      }
+    }
+    else {
+      $this->onSingleTransition($id, $fn);
+    }
   }
 
   /*
@@ -113,6 +123,10 @@ class PDA {
    * Use transition events to catch error state.
    */
   function transition($id) {
+    if (get_class($id)) { // transitioning from a NodeAdapter
+
+    }
+
     $from = $this->state->getID();
     if (array_key_exists($id, $this->nodes) && !is_null($this->nodes[$this->state->getID()]->transition($this->nodes[$id]))) {
       $this->state = $this->nodes[$id];
@@ -133,6 +147,15 @@ class PDA {
     $node2 = $this->getOrCreateNode($id2);
 
     $node1->addTransition($node2);
+  }
+
+  /*
+   * Set a function to run when triggered by a transition to the node with id
+   * $id.
+   */
+  private function onSingleTransition($id, $fn=null) {
+    $node = $this->getOrCreateNode($id);
+    array_push($this->events[$id], $fn);
   }
 
   /*
