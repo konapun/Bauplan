@@ -123,11 +123,11 @@ class PDA {
    * Use transition events to catch error state.
    */
   function transition($id) {
-    if (get_class($id)) { // transitioning from a NodeAdapter
-
+    $node = $id;
+    if (is_object($id)) { // transitioning from a NodeAdapter
+      $id = $node->getID();
     }
 
-    $from = $this->state->getID();
     if (array_key_exists($id, $this->nodes) && !is_null($this->nodes[$this->state->getID()]->transition($this->nodes[$id]))) {
       $this->state = $this->nodes[$id];
     }
@@ -137,7 +137,7 @@ class PDA {
 
     $to = $this->state->getID();
     foreach (array_merge($this->events[$to], $this->events['__all__']) as $event) {
-      $event($from, $to);
+      $event($node);
     }
     return $to;
   }

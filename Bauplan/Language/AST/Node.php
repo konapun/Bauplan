@@ -1,6 +1,8 @@
 <?php
 namespace Bauplan\Language\AST;
 
+use Bauplan\Exception\TreeException as TreeException;
+
 /*
  * The abstract syntax tree is a recursive structure where every node is the
  * root of the subtree rooted at itself
@@ -29,11 +31,18 @@ class Node {
   }
 
   function getParent() {
+    if ($this->isRoot()) {
+      throw new TreeException("Root of tree has no parent");
+    }
     return $this->parent;
   }
 
   function getChildren() {
     return $this->children;
+  }
+
+  function getData() {
+    return $this->data;
   }
 
   function isRoot() {
@@ -42,6 +51,10 @@ class Node {
 
   function isLeaf() {
     return count($this->children) === 0;
+  }
+
+  function __toString() {
+    return $this->getData();
   }
 }
 ?>

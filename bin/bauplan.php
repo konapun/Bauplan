@@ -4,6 +4,7 @@ include_once('Bauplan.php');
 use Bauplan\Perf\Timer as Timer;
 use Bauplan\Language\Template\TemplateLexer as Lexer;
 use Bauplan\Language\Template\TemplateParser as Parser;
+use Bauplan\Language\AST\IO\JSON as JSONIO;
 //use Bauplan\Compiler\Compiler as Compiler;
 //use Bauplan\Compiler\SyntaxTreeExporter\ArrayExporter as TreeExporter;
 
@@ -44,7 +45,10 @@ if (array_key_exists('l', $options)) {
 }
 
 $parser = new Parser();
-$parser->parse($tokens);
+$ast = $parser->parse($tokens);
+
+$exporter = new JSONIO();
+$exporter->export($ast);
 
 function help() {
   return <<<EOS

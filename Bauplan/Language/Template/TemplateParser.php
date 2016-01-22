@@ -27,8 +27,9 @@ class TemplateParser extends Parser {
     $pda->addTransition(TemplateToken::T_DIRECTIVE_END, array_merge($productions['BODY'], array(TemplateToken::T_TYPE_CLOSE)));
     $pda->addTransition($productions['BODY'], TemplateToken::T_TYPE_CLOSE);
     $pda->addTransition(TemplateToken::T_TYPE_CLOSE, TemplateToken::T_TYPE_CLOSE);
-    $pda->addTransition($productions['IDENTIFIERS'], array(TemplateToken::T_DIRECTIVE_START, TemplateToken::T_TYPE_CLOSE)); //  directive blocks are optional
+    $pda->addTransition($productions['IDENTIFIERS'], array_merge(array(TemplateToken::T_DIRECTIVE_START, TemplateToken::T_TYPE_CLOSE), $productions['BODY'])); //  directive blocks are optional
     $pda->addTransition(TemplateToken::T_TYPE_CLOSE, $productions['BODY']);
+    $pda->addTransition($productions['LITERALS'], $productions['BODY']);
     $pda->addTransition($productions['BODY'], $productions['BODY']);
     $pda->addTransition(TemplateToken::T_TYPE_CLOSE, PDA::ACCEPT);
 
@@ -40,17 +41,25 @@ class TemplateParser extends Parser {
     $productions = $this->getProductions();
 
     $currNode = $ast; // start at epsilon
-    $pda->onTransition($productions['TEMPLATE_TYPES'], function($from, $to) use (&$ast) {
-      echo "Transition to TEMPLATE_TYPE $to\n";
+    $pda->onTransition($productions['TEMPLATE_TYPES'], function($node) use (&$ast, &$currNode) {
+      $currNode = $ast->addChild($node->getValue());
     });
-    $pda->onTransition(function($from, $to) use (&$ast) {
-      echo "Transitioning from $from to $to\n";
+    $pda->onTransition(TemplateToken::T_TYPE_CLOSE, function() use (&$ast, &$currNode) {
+      echo "Getting parent of $currNode\n";
+      $currNode = $currNode->getParent();
     });
-    $pda->onTransition(PDA::FAIL, function($from, $to) {
-      echo "Failed while attempting to transition from $from to $to\n";
+    $pda->onTransition(function($to) use (&$ast) {
+      echo "Transitioning to $to\n";
+    });
+    $pda->onTransition(PDA::FAIL, function($to) {
+      echo "Failed while attempting to transition to $to\n";
     });
     $pda->onTransition(PDA::ACCEPT, function() {
       echo "Transitioned to ACCEPT!\n";
+    });
+
+    $pda->onTransition(function() use (&$currNode) {
+      echo "Current root: " . $currNode . "\n";
     });
   }
 
@@ -76,18 +85,20 @@ class TemplateParser extends Parser {
       TemplateToken::T_IDENTIFIER,
       TemplateToken::T_LAMBDA
     );
+    $literals = array(
+      TemplateToken::T_LITERAL_STRING,
+      TemplateToken::T_ANY
+    );
     $body = array_merge(
       $templateTypes,
-      array(
-        TemplateToken::T_LITERAL_STRING,
-        TemplateToken::T_ANY
-      )
+      $literals
     );
 
     return array(
       'TEMPLATE_TYPES'  => $templateTypes,
       'DIRECTIVE_TYPES' => $directiveTypes,
       'IDENTIFIERS'     => $identifiers,
+      'LITERALS'        => $literals,
       'BODY'            => $body
     );
   }

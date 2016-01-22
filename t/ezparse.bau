@@ -4,3 +4,12 @@
 *(test) ;; good
 *(test {}) ;; good
 ;;*({}) ;; bad
+
+#(lambda
+  ;; FIXME: uncommenting this will break the parser
+  @(lambda
+    &(lambda
+      $(lambda)
+    )
+  )
+)
