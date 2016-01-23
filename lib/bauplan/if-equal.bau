@@ -1,0 +1,43 @@
+;;(
+  @name: if-equals
+
+  @example:
+    *(lambda
+      @(lambda {display: off}
+        $(var1 {value: "one"})
+        $(var2 {value: "two"})
+        $(var3 {value: "three"})
+      )
+
+      #(if-equal {args: var1, var2, var3}
+
+      )
+      #(alt
+        Not equal
+      )
+    )
+;;)
+*(lambda {namespace: "bauplan"}
+
+  ;;(
+    The if-equal keyword runs its body only if all its arguments are equal.
+    Equality is non-strict (coerced).
+  ;;)
+  &(if-equal {def-instruction | parity: "2-n"} ;; 2-n parity means at least 2 params
+  <<<
+    $arguments = $this->arguments; ;; arguments is a plain array of arguments passed in, while $this->getArguments() returns arguments wrapped in an object with  convenience methods
+
+    $first = array_pop($arguments);
+    $equal = true;
+    foreach ($arguments as $argument) {
+      if ($argument->value != $first->value) {
+        $equal = false;
+        break;
+      }
+    }
+
+    if (!$equal) {
+      $this->halt();
+    }
+  >>>)
+)

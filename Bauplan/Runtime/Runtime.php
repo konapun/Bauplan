@@ -1,5 +1,5 @@
 <?php
-namespace Bauplan;
+namespace Bauplan\Runtime;
 
 /*
  * Set up constants, load directives, etc.
@@ -16,6 +16,10 @@ class Runtime {
     // TODO
   }
 
+  function getNamespaceFor($type) {
+
+  }
+  
   function run() {
 
   }

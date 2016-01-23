@@ -1,0 +1,24 @@
+*(lambda {namespace: "bauplan/lib"}
+
+  ;;(
+    The if-equal keyword runs its body only if all its arguments are equal.
+    Equality is non-strict (coerced).
+  ;;)
+  &(if-equal {def-instruction | parity: "2n" | language: "php"} ;; 2n parity means at least 2 params
+  <<<
+    $arguments = $this->arguments; ;; arguments is a plain array of arguments passed in, while $this->getArguments() returns arguments wrapped in an object with  convenience methods
+
+    $first = array_pop($arguments);
+    $equal = true;
+    foreach ($arguments as $argument) {
+      if ($argument->value != $first->value) {
+        $equal = false;
+        break;
+      }
+    }
+
+    if (!$equal) {
+      $this->halt();
+    }
+  >>>)
+)

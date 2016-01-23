@@ -1,0 +1,29 @@
+*(lambda {namespace: "bauplan"}
+
+  ;;(
+    The "alt" keyword functions as an alternative to run if the condition above
+    it fails. There are some important differences between "alt" and normal
+    "else" statements from typical languages:
+      1) "alt" must do lookup for its "if" condition at runtime, unless
+         specifically passed
+      2) alt's "if" condition is considered to evaluate to true if its value is
+         non-empty
+  ;;)
+  &(alt {def-instruction | parity: "0-1"} ;; 0-1 means there is 1 optional parameter
+  <<<
+    $arguments = $this->arguments; ;; arguments is a plain array of arguments passed in, while $this->getArguments() returns arguments wrapped in an object with  convenience methods
+
+    $first = array_pop($arguments);
+    $equal = true;
+    foreach ($arguments as $argument) {
+      if ($argument->value != $first->value) {
+        $equal = false;
+        break;
+      }
+    }
+
+    if (!$equal) {
+      $this->halt();
+    }
+  >>>)
+)
