@@ -37,29 +37,52 @@ class TemplateParser extends Parser {
     $this->setActions($pda, $ast);
   }
 
+  /*
+   * Automaton traversal actions which build the AST
+   */
   private function setActions($pda, $ast) {
     $productions = $this->getProductions();
 
-    $currNode = $ast; // start at epsilon
-    $pda->onTransition($productions['TEMPLATE_TYPES'], function($node) use (&$ast, &$currNode) {
-      $currNode = $ast->addChild($node->getValue());
+    $currParent = $ast; // start at epsilon
+    $pda->onTransition(function($node) use (&$ast, &$currParent) {
+      $type = is_object($node) ? $node->getType() : $node;
+      switch ($node) {
+        case TemplateToken::T_TEMPLATE:
+        case TemplateToken::T_SECTION:
+        case TemplateToken::T_CODE:
+        case TemplateToken::T_INSTRUCTION:
+          // TODO: Use NodeFactory
+          $node = NodeFactory::build($type, $value);
+          $currParent = $currParent->addChild($node->getValue());
+          break;
+
+        case TemplateToken::T_TYPE_CLOSE:
+          $currParent = $currParent->getParent();
+          break;
+
+        // Ignore PDA nodes which don't belong in the AST
+        case PDA::START:
+        case PDA::ACCEPT:
+        case PDA::FAIL:
+          break;
+
+        default:
+          $currParent->addChild($node->getValue());
+          break;
+      }
     });
-    $pda->onTransition(TemplateToken::T_TYPE_CLOSE, function() use (&$ast, &$currNode) {
-      echo "Getting parent of $currNode\n";
-      $currNode = $currNode->getParent();
-    });
-    $pda->onTransition(function($to) use (&$ast) {
-      echo "Transitioning to $to\n";
+
+    /* Debug */
+    $currNode = "(empty)";
+    $pda->onTransition(function($to) use (&$ast, &$currNode) {
+      echo "Transitioning from '$currNode' to '$to'\n";
+      $currNode = $to;
     });
     $pda->onTransition(PDA::FAIL, function($to) {
       echo "Failed while attempting to transition to $to\n";
     });
     $pda->onTransition(PDA::ACCEPT, function() {
       echo "Transitioned to ACCEPT!\n";
-    });
-
-    $pda->onTransition(function() use (&$currNode) {
-      echo "Current root: " . $currNode . "\n";
     });
   }
 

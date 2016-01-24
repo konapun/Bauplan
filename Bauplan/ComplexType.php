@@ -25,7 +25,7 @@ abstract class ComplexType implements \Serializable, Renderable, Cloneable {
   function getDirectives() {
 
   }
-  
+
   function callDirective($name) {
 
   }

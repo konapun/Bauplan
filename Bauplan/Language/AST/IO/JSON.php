@@ -18,14 +18,20 @@ class JSON implements IO {
   }
 
   function export($tree) {
-    $walker = $this->walker;
+    return json_encode($this->convert($tree));
+  }
 
-    echo "EXPORTING!\n";
-    $walker->walk($tree, function($node) {
-      echo "On node $node\n";
-    });
-
-    // TODO
+  private function convert($tree) {
+    $data = $tree->getData();
+    $node = array(
+      //'type'     => $data->getType(), // FIXME change this once we have the actual AST. Actual properties will be from attributes field, like PHPparser
+      'value'    => $data,
+      'children' => array()
+    );
+    foreach ($tree->getChildren() as $child) {
+      array_push($node['children'], $this->convert($child));
+    }
+    return $node;
   }
 }
 ?>

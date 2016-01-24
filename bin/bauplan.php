@@ -48,7 +48,7 @@ $parser = new Parser();
 $ast = $parser->parse($tokens);
 
 $exporter = new JSONIO();
-$exporter->export($ast);
+echo $exporter->export($ast) . "\n";
 
 function help() {
   return <<<EOS
