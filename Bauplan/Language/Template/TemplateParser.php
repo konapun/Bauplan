@@ -2,10 +2,16 @@
 namespace Bauplan\Language\Template;
 
 use Bauplan\Language\StateMachine\PDA as PDA;
+use Bauplan\Language\AST\Node as Node;
 use Bauplan\Language\Parser as Parser;
 use Bauplan\Language\Directive\DirectiveToken as DirectiveToken; // FIXME: parse separately through directiveparser
-use Bauplan\Language\AST\NodeFactory as NodeFactory;
 
+/*
+ * Set up node transitions and built an AST.
+ *
+ * This parser works by first building a parse tree which is then traversed in a
+ * second step to build the parse tree
+ */
 class TemplateParser extends Parser {
 
   /*
@@ -34,26 +40,32 @@ class TemplateParser extends Parser {
     $pda->addTransition(TemplateToken::T_TYPE_CLOSE, PDA::ACCEPT);
 
     $pda->stackMatch(TemplateToken::T_TYPE_CLOSE, TemplateToken::T_TYPE_OPEN);
-    $this->setActions($pda, $ast);
+
+    $that = $this;
+    $parseTree = $this->buildParseTree($pda);
+    $pda->onTransition(PDA::ACCEPT, function() use ($that, &$parseTree, &$ast) {
+      echo "BUILDING AST!\n";
+      $that->_buildAST($parseTree, $ast);
+    });
   }
 
   /*
-   * Automaton traversal actions which build the AST
+   * Automaton traversal actions which build the parse tree
    */
-  private function setActions($pda, $ast) {
+  private function buildParseTree($pda) {
     $productions = $this->getProductions();
 
-    $currParent = $ast; // start at epsilon
-    $pda->onTransition(function($node) use (&$ast, &$currParent) {
+    $tree = new Node(Parser::EPSILON); // the root of the parse tree
+    $currParent = $tree; // start at root
+    $pda->onTransition(function($node) use (&$tree, &$currParent) {
       $type = is_object($node) ? $node->getType() : $node;
-      switch ($node) {
+      switch ($type) {
         case TemplateToken::T_TEMPLATE:
         case TemplateToken::T_SECTION:
         case TemplateToken::T_CODE:
         case TemplateToken::T_INSTRUCTION:
-          // TODO: Use NodeFactory
-          $node = NodeFactory::build($type, $value);
-          $currParent = $currParent->addChild($node->getValue());
+        case TemplateToken::T_VARIABLE:
+          $currParent = $currParent->addChild($node);
           break;
 
         case TemplateToken::T_TYPE_CLOSE:
@@ -67,14 +79,15 @@ class TemplateParser extends Parser {
           break;
 
         default:
-          $currParent->addChild($node->getValue());
+          $currParent->addChild($node);
           break;
       }
     });
 
     /* Debug */
+    /*
     $currNode = "(empty)";
-    $pda->onTransition(function($to) use (&$ast, &$currNode) {
+    $pda->onTransition(function($to) use (&$tree, &$currNode) {
       echo "Transitioning from '$currNode' to '$to'\n";
       $currNode = $to;
     });
@@ -84,6 +97,19 @@ class TemplateParser extends Parser {
     $pda->onTransition(PDA::ACCEPT, function() {
       echo "Transitioned to ACCEPT!\n";
     });
+    */
+    return $tree;
+  }
+
+  /*
+   * Convert the parse tree into an AST
+   */
+  public function _buildAST($parseTree, $ast) {
+    foreach ($parseTree->getChildren() as $node) {
+      $token = $node->getData();
+
+      $this->_buildAST($node, $ast->addChild($token->getValue()));
+    }
   }
 
   /*

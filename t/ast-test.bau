@@ -1,4 +1,6 @@
 ;;(
   Easy cases to test building the AST
 ;;)
-*(template)
+*(template
+  @(section)
+)
