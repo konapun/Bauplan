@@ -72,10 +72,11 @@ class TemplateParser extends Parser {
           $currParent = $currParent->getParent();
           break;
 
-        // Ignore PDA nodes which don't belong in the AST
+        // Nodes to ignore which don't belong in the AST
         case PDA::START:
         case PDA::ACCEPT:
         case PDA::FAIL:
+        case TemplateToken::T_TYPE_OPEN:
           break;
 
         default:
