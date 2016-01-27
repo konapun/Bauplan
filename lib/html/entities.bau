@@ -1,0 +1,22 @@
+*(entities {namespace: "html"}
+
+  ;;(
+    HTML entities
+
+    example:
+      *(lambda {use: "html"}
+        Greater Than: $(greater-than)
+      )
+
+      ;; or
+      *(lambda
+        Greater Than: $(html/greater-than)
+      )
+  ;;)
+  @(lambda {apply-nested-attribute: "readonly"}
+
+    $(greater-than {value: "&gt;"})
+    $(less-than {value: "&lt;"})
+    ;; TODO
+  )
+)

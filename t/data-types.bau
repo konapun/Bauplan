@@ -1,0 +1,16 @@
+;;(
+  Arrays and hashes should be supported as native data types
+;;)
+*(lambda
+
+<ul>
+  ;; sections are basically arrays. These need to be able to support nested arrays and arrays of hashes
+  @(section ;; a section itself serves as a loop template
+    <li>
+      <div>
+        
+      </div>
+    </li>
+  )
+</ul>
+)

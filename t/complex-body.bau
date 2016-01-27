@@ -1,0 +1,8 @@
+*(complex-body
+
+  @(section {key: val})
+  <<<
+    Literal
+  >>>
+  $(var)
+)

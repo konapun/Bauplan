@@ -15,6 +15,7 @@ class DirectiveLexer extends Lexer {
 
   protected function tokens() {
     return array(
+      '/^;;(.*)/'                     => Lexer::SKIP, // ;; inline comment
       '/^(\|)/'                       => Token::T_PIPE, // |
       '/^(,)/'                        => Token::T_COMMA, // ,
       '/^\[([^\]]*)\]/'               => Token::T_COMMA, // [anything] - functions as a syntactic comma

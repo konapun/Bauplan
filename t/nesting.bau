@@ -1,0 +1,18 @@
+*(nesting
+
+  *(outer-1
+    @(outer-2
+      @(outer-3
+        @(outer-4
+          @(outer-5
+            @(inner-5_1)
+            @(inner-5_2)
+            @(inner-5_3)
+            @(inner-5_4)
+            @(inner-5_5)
+          )
+        )
+      )
+    )
+  )
+)

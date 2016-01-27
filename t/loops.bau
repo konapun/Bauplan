@@ -1,0 +1,10 @@
+*(loops
+
+  @(loop-section {values: 1, 2, 3, 4, 5 | into: "val"}
+  <<<
+    <div>
+      <strong>$(val)</strong>
+    </div
+  >>>)
+
+)

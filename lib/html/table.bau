@@ -1,0 +1,19 @@
+*(table {namespace: "html"}
+
+  <table>
+    <thead>
+      @(headers
+        <th>$(header)</th>
+      )
+    </thead>
+    <tbody>
+      @(rows
+        <tr>
+          @(columns {validate-count: headers}
+            <td>$(column)</td>
+          )
+        </tr>
+      )
+    </tbody>
+  </table>
+)

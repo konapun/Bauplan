@@ -1,0 +1,15 @@
+*(directives
+
+  $(var {readonly | value: "test"})
+
+  @(section {
+    key1: 1 | ;; number (int)
+    key2: 2.0 | ;; number (float)
+    key3: "string" | ;; string
+    key4: false | ;; false
+    key5: true | ;; true
+    key6: var ;; reference
+  })
+
+  @(section { key1: 1 | key2: 2.0 | key3: "string" | key4: false | key5: true | key6: var }) ;; same inline
+)

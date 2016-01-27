@@ -26,8 +26,8 @@ class TemplateParser extends Parser {
     $pda->addTransition($productions['TEMPLATE_TYPES'], TemplateToken::T_TYPE_OPEN);
     $pda->addTransition(TemplateToken::T_TYPE_OPEN, $productions['IDENTIFIERS']);
     $pda->addTransition(TemplateToken::T_DIRECTIVE_START, array(DirectiveToken::T_KEY, DirectiveToken::T_PIPE, TemplateToken::T_DIRECTIVE_END));
-    $pda->addTransition(DirectiveToken::T_KEY, array(DirectiveToken::T_COLON, TemplateToken::T_DIRECTIVE_END));
-    $pda->addTransition(array(DirectiveToken::T_COLON, DirectiveToken::T_COMMA), array(DirectiveToken::T_STRING, DirectiveToken::T_NUMBER, DirectiveToken::T_TRUE, DirectiveToken::T_FALSE));
+    $pda->addTransition(DirectiveToken::T_KEY, array(DirectiveToken::T_COLON, DirectiveToken::T_PIPE, TemplateToken::T_DIRECTIVE_END));
+    $pda->addTransition(array(DirectiveToken::T_COLON, DirectiveToken::T_COMMA), array(DirectiveToken::T_KEY, DirectiveToken::T_STRING, DirectiveToken::T_NUMBER, DirectiveToken::T_TRUE, DirectiveToken::T_FALSE)); // T_KEY here is a transition to a type reference
     $pda->addTransition(array(DirectiveToken::T_STRING, DirectiveToken::T_NUMBER, DirectiveToken::T_TRUE, DirectiveToken::T_FALSE), array(DirectiveToken::T_COMMA, TemplateToken::T_DIRECTIVE_END, DirectiveToken::T_PIPE));
     $pda->addTransition(DirectiveToken::T_PIPE, DirectiveToken::T_KEY);
     $pda->addTransition(TemplateToken::T_DIRECTIVE_END, array_merge($productions['BODY'], array(TemplateToken::T_TYPE_CLOSE)));
@@ -86,10 +86,17 @@ class TemplateParser extends Parser {
     });
 
     /* Debug */
-    /*
     $currNode = "(empty)";
     $pda->onTransition(function($to) use (&$tree, &$currNode) {
-      echo "Transitioning from '$currNode' to '$to'\n";
+      $fromType = "";
+      $currType = "";
+      if (is_object($currNode)) {
+        $fromType = "(" . $currNode->getType() .")";
+      }
+      if (is_object($to)) {
+        $currType = "(" . $to->getType() . ")";
+      }
+      echo "Transitioning from '$currNode' $fromType to '$to' $currType\n";
       $currNode = $to;
     });
     $pda->onTransition(PDA::FAIL, function($to) {
@@ -98,7 +105,7 @@ class TemplateParser extends Parser {
     $pda->onTransition(PDA::ACCEPT, function() {
       echo "Transitioned to ACCEPT!\n";
     });
-    */
+
     return $tree;
   }
 
