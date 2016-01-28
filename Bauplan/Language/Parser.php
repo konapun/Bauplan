@@ -24,9 +24,8 @@ abstract class Parser {
   final function parse($tokens) {
     $pda = new PDA();
     $ast = new AST(self::EPSILON);
-    $pda->onTransition(PDA::FAIL, function() {
-      throw new ParseException(); // TODO: give a more informative error message
-    });
+
+    $this->handleErrors($pda, $tokens);
     $this->rules($pda, $ast); // call to abstract function from concrete implementor
 
     $pda->reset();
@@ -35,6 +34,19 @@ abstract class Parser {
     }
     $pda->transition(PDA::ACCEPT); // must end in accept state in order to be a valid parse
     return $ast;
+  }
+
+  /*
+   * Set up transition actions to throw informative errors
+   */
+  private function handleErrors($pda, $tokens) {
+    $from = $tokens[0];
+    $pda->onTransition(function($to) use (&$from) {
+      $from = $to;
+    });
+    $pda->onTransition(PDA::FAIL, function($to) use (&$from) {
+      throw new ParseException($from, $to);
+    });
   }
 }
 ?>

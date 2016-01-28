@@ -1,5 +1,20 @@
-*(template1
-  {
-    key | val | :
-  }
+*(template
+
+  ;; Error: template sigil with no typedef
+  ;;*
+
+  ;; Error: bad transition
+  ;;*)
+
+  ;;(
+  ;; Error: bad position for key-val separator
+  *(template1
+    {
+      key | val | :
+    }
+  )
+  ;;)
+
+  ;; Error: Variable types can't have bodies
+  ;;$(variable body)
 )

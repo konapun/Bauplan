@@ -31,13 +31,14 @@ class TemplateParser extends Parser {
     $pda->addTransition(array(DirectiveToken::T_STRING, DirectiveToken::T_NUMBER, DirectiveToken::T_TRUE, DirectiveToken::T_FALSE), array(DirectiveToken::T_COMMA, TemplateToken::T_DIRECTIVE_END, DirectiveToken::T_PIPE));
     $pda->addTransition(DirectiveToken::T_PIPE, DirectiveToken::T_KEY);
     $pda->addTransition(TemplateToken::T_DIRECTIVE_END, array_merge($productions['BODY'], array(TemplateToken::T_TYPE_CLOSE)));
-    $pda->addTransition($productions['BODY'], TemplateToken::T_TYPE_CLOSE);
     $pda->addTransition(TemplateToken::T_TYPE_CLOSE, TemplateToken::T_TYPE_CLOSE);
     $pda->addTransition($productions['IDENTIFIERS'], array_merge(array(TemplateToken::T_DIRECTIVE_START, TemplateToken::T_TYPE_CLOSE), $productions['BODY'])); //  directive blocks are optional
     $pda->addTransition(TemplateToken::T_TYPE_CLOSE, $productions['BODY']);
     $pda->addTransition($productions['LITERALS'], $productions['BODY']);
-    $pda->addTransition($productions['BODY'], $productions['BODY']);
     $pda->addTransition(TemplateToken::T_TYPE_CLOSE, PDA::ACCEPT);
+
+    // Body transitions
+    $pda->addTransition(TemplateToken::T_LITERAL_STRING, array_merge($productions['TEMPLATE_TYPES'], array(TemplateToken::T_LITERAL_STRING, TemplateToken::T_TYPE_CLOSE)));
 
     $pda->stackMatch(TemplateToken::T_TYPE_CLOSE, TemplateToken::T_TYPE_OPEN);
 
@@ -105,7 +106,6 @@ class TemplateParser extends Parser {
     $pda->onTransition(PDA::ACCEPT, function() {
       echo "Transitioned to ACCEPT!\n";
     });
-
     return $tree;
   }
 

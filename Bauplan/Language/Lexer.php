@@ -1,6 +1,7 @@
 <?php
 namespace Bauplan\Language;
-use Bauplan\Exception\SyntaxError;
+
+use Bauplan\Exception\SyntaxException as SyntaxException;
 
 /*
  * Break source into tokens to be consumed by the parser
@@ -29,22 +30,22 @@ abstract class Lexer {
   }
 
   final function tokenize($source) {
-    if (!is_array($source)) $source = array($source);
+    $lineNumber = 1;
+    $offset = 0;
 
     $tokens = array();
-    foreach ($source as $number => $line) {
-      $offset = 0;
-      while ($offset < strlen($line)) {
-        $string = substr($line, $offset);
-        $result = $this->match($string, $number+1);
-        if ($result === false) {
-          throw new SyntaxError("Lexing failed at\n\t$string\non source line " . ($line+1) . " or $number");
-        }
-
-        list($token, $match) = $result;
-        array_push($tokens, $token);
-        $offset += strlen($match);
+    while ($offset < strlen($source)) {
+      $string = substr($source, $offset);
+      $result = $this->match($string, $lineNumber, $offset);
+      if ($result === false) {
+        throw new SyntaxException($string, $lineNumber, $offset); // FIXME
       }
+
+      list($token, $match) = $result;
+      array_push($tokens, $token);
+
+      $offset += strlen($match);
+      $lineNumber += substr_count($string, str_replace(array("\r\n","\n\r","\r"), "\n", $string)); // increment line number by all types of newlines
     }
 
     return $this->postLex($this->removeSkippedTokens($tokens));
@@ -76,27 +77,15 @@ abstract class Lexer {
     return $realTokens;
   }
 
-  private function match($string, $lineNumber) {
+  private function match($string, $line, $column) {
     foreach ($this->tokens() as $pattern => $tokenName) {
-      $pattern = $this->mungeRegex($pattern);
       if (preg_match($pattern, $string, $matches)) {
         //echo "!!!Matched '$pattern' (for $tokenName) as '" . $matches[1] . "' on $string\n--------------------------------\n";
-        return array(new Token($matches[1], $tokenName, $lineNumber), $matches[0]);
+        return array(new Token($matches[1], $tokenName, $line, $column), $matches[0]);
       }
     }
 
     return false;
-  }
-
-  /*
-   * TODO: Since match wants to only match the first regex, we need to insert ^
-   * into the beginning of the regex. However, some regexes want this in places
-   * other than the start of the string so for now just do it in the concrete
-   * lexer regexes
-   */
-  private function mungeRegex($regex) {
-    return $regex;
-    return '/^' . substr($regex, 1);
   }
 }
 ?>

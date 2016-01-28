@@ -33,7 +33,7 @@ include_once($langBase . 'Template' . DIRECTORY_SEPARATOR . 'TemplateToken.php')
 include_once($langBase . 'Template' . DIRECTORY_SEPARATOR . 'TemplateParser.php');
 
 include_once($exceptionBase . 'IOException.php');
-include_once($exceptionBase . 'SyntaxError.php');
+include_once($exceptionBase . 'SyntaxException.php');
 include_once($exceptionBase . 'ParseException.php');
 include_once($exceptionBase . 'TreeException.php');
 
