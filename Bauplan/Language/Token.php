@@ -3,6 +3,10 @@ namespace Bauplan\Language;
 
 use Bauplan\Language\StateMachine\NodeAdapter as NodeAdapter;
 
+/*
+ * Tokens are created by the lexer as output of the transformation of the source
+ * string
+ */
 class Token implements NodeAdapter {
   private $type;
   private $value;

@@ -45,7 +45,6 @@ class TemplateParser extends Parser {
     $that = $this;
     $parseTree = $this->buildParseTree($pda);
     $pda->onTransition(PDA::ACCEPT, function() use ($that, &$parseTree, &$ast) {
-      echo "BUILDING AST!\n";
       $that->_buildAST($parseTree, $ast);
     });
   }
@@ -87,6 +86,7 @@ class TemplateParser extends Parser {
     });
 
     /* Debug */
+    /*
     $currNode = "(empty)";
     $pda->onTransition(function($to) use (&$tree, &$currNode) {
       $fromType = "";
@@ -106,6 +106,8 @@ class TemplateParser extends Parser {
     $pda->onTransition(PDA::ACCEPT, function() {
       echo "Transitioned to ACCEPT!\n";
     });
+    */
+
     return $tree;
   }
 
