@@ -1,0 +1,4 @@
+List of things to fix/improve later:
+  1) Most PDA transitions are on tokens, which implement the Node interface. However, transitions to internal states are done via strings. There is currently some messy object checking in place to deal with this but a unified, Node-implementing solution would be cleaner
+  2) Get the production machine working so grammars can be defined more naturally rather than explicitly building token transitions, as is currently done in TemplateParser
+  

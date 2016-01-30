@@ -135,7 +135,6 @@ class TemplateParser extends Parser {
     );
     $directiveTypes = array(
       DirectiveToken::T_STRING,
-      //DirectiveToken::T_IDENTIFIER, // FIXME: in order to refer to template types as variables
       DirectiveToken::T_NUMBER,
       DirectiveToken::T_TRUE,
       DirectiveToken::T_FALSE

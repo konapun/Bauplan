@@ -17,4 +17,7 @@
 
   ;; Error: Variable types can't have bodies
   ;;$(variable body)
+
+  ;; Error: Unmatched parens
+  ))
 )

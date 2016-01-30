@@ -45,6 +45,13 @@ abstract class Parser {
       $from = $to;
     });
     $pda->onTransition(PDA::FAIL, function($to) use (&$from) {
+      if (!is_object($to)) {
+        $to = new Token($to, '(internal)');
+      }
+      if (!is_object($from)) {
+        $from = new Token($from, '(internal)');
+      }
+
       throw new ParseException($from, $to);
     });
   }
